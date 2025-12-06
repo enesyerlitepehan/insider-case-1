@@ -8,7 +8,7 @@ GitHub Actions deploys the SAM stack on every commit to the dev branch (master).
 Workflow steps:
 - assume an AWS role via OIDC,
 - run `sam build` and `sam deploy` with `--resolve-s3`,
-- pass template parameters for the health stack (AppName, EnvName, Suffix, ReleaseVersion, EnvTag, ServiceTag).
+- pass template parameters for the health stack (AppName, EnvName, ReleaseVersion, EnvTag, ServiceTag). Suffix is omitted to use the template default ("").
 
 ## Required secrets
 - `AWS_REGION`: target region

@@ -21,7 +21,6 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   STACK_NAME: insider-case-health-dev
   ENV_NAME: dev
-  SUFFIX: ""
   SERVICE_TAG: insider-case
 
 jobs:
@@ -114,7 +113,6 @@ jobs:
             --parameter-overrides \
               AppName=insider-case \
               EnvName=${ENV_NAME} \
-              Suffix=${SUFFIX} \
               ReleaseVersion=${GITHUB_SHA} \
               EnvTag=${ENV_NAME} \
               ServiceTag=${SERVICE_TAG}
