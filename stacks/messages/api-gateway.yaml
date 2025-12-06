@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "API Gateway for messages endpoints"
+
+Parameters:
+  AppName:
+    Type: String
+  EnvName:
+    Type: String
+  Suffix:
+    Type: String
+  ReleaseVersion:
+    Type: String
+  EnvTag:
+    Type: String
+  ServiceTag:
+    Type: String
+  GetMessagesArn:
+    Type: String
+  PostMessagesArn:
+    Type: String
+
+Resources:
+  MessagesApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${EnvName}-${AppName}-messages-api${Suffix}"
+      EndpointConfiguration:
+        Types:
+          - EDGE
+      Tags:
+        - Key: ReleaseVersion
+          Value: !Ref ReleaseVersion
+
+  MessagesResource:
+    DependsOn:
+      - MessagesApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MessagesApiGateway.RootResourceId
+      PathPart: "messages"
+      RestApiId: !Ref MessagesApiGateway
+
+  MessagesGet:
+    DependsOn:
+      - MessagesResource
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MessagesApiGateway
+      ResourceId: !Ref MessagesResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetMessagesArn}/invocations"
+
+  MessagesPost:
+    DependsOn:
+      - MessagesResource
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MessagesApiGateway
+      ResourceId: !Ref MessagesResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMessagesArn}/invocations"
+
+  MessagesGetPermission:
+    DependsOn:
+      - MessagesGet
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetMessagesArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MessagesApiGateway}/*/GET/messages"
+
+  MessagesPostPermission:
+    DependsOn:
+      - MessagesPost
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PostMessagesArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MessagesApiGateway}/*/POST/messages"
+
+  MessagesApiDeployment:
+    DependsOn:
+      - MessagesGet
+      - MessagesPost
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref MessagesApiGateway
+
+  MessagesApiStage:
+    DependsOn:
+      - MessagesApiDeployment
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref MessagesApiGateway
+      DeploymentId: !Ref MessagesApiDeployment
+      StageName: !Sub "${EnvName}${Suffix}"
+      Tags:
+        - Key: env
+          Value: !Ref EnvTag
+        - Key: service
+          Value: !Ref ServiceTag
+
+Outputs:
+  MessagesApiUrl:
+    Description: "Invoke URL for messages API"
+    Value: !Sub "https://${MessagesApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}${Suffix}/messages"

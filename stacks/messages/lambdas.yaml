@@ -68,12 +68,6 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
-      Events:
-        MessagesGet:
-          Type: Api
-          Properties:
-            Path: /messages
-            Method: GET
 
     Metadata:
       BuildMethod: esbuild
@@ -105,12 +99,6 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
-      Events:
-        MessagesPost:
-          Type: Api
-          Properties:
-            Path: /messages
-            Method: POST
 
     Metadata:
       BuildMethod: esbuild
@@ -218,3 +206,11 @@ Outputs:
   MessageSendWorkerArn:
     Description: ARN of the worker lambda
     Value: !GetAtt MessageSendWorker.Arn
+
+  GetMessagesArn:
+    Description: ARN of the get-messages lambda
+    Value: !GetAtt GetMessagesFunction.Arn
+
+  PostMessagesArn:
+    Description: ARN of the post-messages lambda
+    Value: !GetAtt PostMessagesFunction.Arn

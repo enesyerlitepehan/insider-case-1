@@ -70,6 +70,20 @@ Resources:
         MainQueueArn: !GetAtt MessagesSqs.Outputs.MainQueueArn
         MainQueueUrl: !GetAtt MessagesSqs.Outputs.MainQueueUrl
 
+  MessagesApiGateway:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./api-gateway.yaml
+      Parameters:
+        AppName: !Ref AppName
+        EnvName: !Ref EnvName
+        Suffix: !Ref Suffix
+        ReleaseVersion: !Ref ReleaseVersion
+        EnvTag: !Ref EnvTag
+        ServiceTag: !Ref ServiceTag
+        GetMessagesArn: !GetAtt MessagesLambdas.Outputs.GetMessagesArn
+        PostMessagesArn: !GetAtt MessagesLambdas.Outputs.PostMessagesArn
+
 Outputs:
   MessagesTableName:
     Description: Name of the DynamoDB Messages table
@@ -106,3 +120,7 @@ Outputs:
   MessageDispatcherArn:
     Description: ARN of the message-dispatcher Lambda
     Value: !GetAtt MessagesLambdas.Outputs.MessageDispatcherArn
+
+  MessagesApiUrl:
+    Description: Invoke URL for messages API
+    Value: !GetAtt MessagesApiGateway.Outputs.MessagesApiUrl

@@ -58,6 +58,10 @@ Outputs:
     Description: "Invoke URL for the healthcheck API"
     Value: !GetAtt HealthStack.Outputs.HealthApiUrl
 
+  MessagesApiUrl:
+    Description: "Invoke URL for the messages API"
+    Value: !GetAtt MessagesStack.Outputs.MessagesApiUrl
+
   MessagesTableName:
     Description: "Name of the Messages DynamoDB table"
     Value: !GetAtt MessagesStack.Outputs.MessagesTableName
