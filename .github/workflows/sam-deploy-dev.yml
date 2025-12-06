@@ -31,6 +31,57 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug OIDC payload (safe)
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+            echo "ACTIONS_ID_TOKEN_REQUEST_URL or ACTIONS_ID_TOKEN_REQUEST_TOKEN is empty" >&2
+            exit 1
+          fi
+
+          url="${ACTIONS_ID_TOKEN_REQUEST_URL}"
+          if [[ "$url" == *"?"* ]]; then
+            url="${url}&audience=sts.amazonaws.com"
+          else
+            url="${url}?audience=sts.amazonaws.com"
+          fi
+
+          status=$(curl -s -w '%{http_code}' -o /tmp/oidc.json -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "$url")
+          echo "OIDC HTTP status: $status"
+          resp_len=$(wc -c < /tmp/oidc.json)
+          echo "OIDC response bytes: $resp_len"
+          if [ "$status" != "200" ] || [ "$resp_len" -eq 0 ]; then
+            echo "Failed to fetch OIDC token" >&2
+            cat /tmp/oidc.json >&2 || true
+            exit 1
+          fi
+
+          token=$(python - <<'PY'
+          import json
+          with open("/tmp/oidc.json") as f:
+              data = json.load(f)
+          print(data.get("value", ""))
+          PY
+          )
+          
+                    if [ -z "$token" ]; then
+                      echo "Token field missing in OIDC response" >&2
+                      exit 1
+                    fi
+          
+                    echo "::add-mask::$token"
+                    export TOKEN="$token"
+                    python - <<'PY'
+          import os, base64, json
+          token = os.environ["TOKEN"]
+          payload = token.split('.')[1]
+          payload += '=' * (-len(payload) % 4)
+          decoded = json.loads(base64.urlsafe_b64decode(payload))
+          print("OIDC payload:")
+          print(json.dumps(decoded, indent=2))
+          PY
+
       - name: Configure AWS credentials (dev)
         uses: aws-actions/configure-aws-credentials@v4
         with:
