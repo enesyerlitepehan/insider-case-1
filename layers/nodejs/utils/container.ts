@@ -4,6 +4,7 @@ import { MessageDispatchService } from '../services/message-dispatch-service';
 import { MessageSendService, MessageSendServiceConfig } from '../services/message-send-service';
 import { HttpClientLike, SqsClientLike } from '../services/types';
 import { logger } from './logger';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
 // Minimal declarations so this module can compile even if @types/node is not installed in CI
 // (CI may run `npm run build` without installing devDependencies for the layer.)
@@ -15,15 +16,16 @@ declare const process: any;
 
 // Build external clients lazily and keep them shared across invocations
 
-// SQS client wrapper using AWS SDK v2 (if available at runtime) or a logging fallback
+// SQS client wrapper using AWS SDK v3 (if available at runtime) or a logging fallback
 class AwsSqsClient implements SqsClientLike {
-  private sqs: any | null = null;
+  private sqs: SQSClient | null = null;
   constructor() {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const AWS = require('aws-sdk');
-      this.sqs = new AWS.SQS();
+      this.sqs = new SQSClient({});
     } catch (_e) {
+      logger.warn('SQS client unavailable; falling back to noop', {
+        error: (_e as Error)?.message,
+      });
       this.sqs = null;
     }
   }
@@ -32,7 +34,18 @@ class AwsSqsClient implements SqsClientLike {
       logger.info('SQS.sendMessage (noop fallback)', { queueUrl: params.QueueUrl, bodyLen: params.MessageBody?.length });
       return;
     }
-    await this.sqs.sendMessage({ QueueUrl: params.QueueUrl, MessageBody: params.MessageBody }).promise();
+    try {
+      const cmd = new SendMessageCommand({ QueueUrl: params.QueueUrl, MessageBody: params.MessageBody });
+      const resp = await this.sqs.send(cmd);
+      logger.info('SQS.sendMessage success', {
+        queueUrl: params.QueueUrl,
+        bodyLen: params.MessageBody?.length,
+        messageId: resp?.MessageId,
+      });
+    } catch (e) {
+      logger.error('SQS.sendMessage error', { queueUrl: params.QueueUrl, error: (e as Error).message });
+      throw e;
+    }
   }
 }
 
