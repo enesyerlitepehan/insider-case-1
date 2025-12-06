@@ -24,6 +24,9 @@ Parameters:
       - "false"
     Default: "false"
     Description: "Enable TTL on the table (attribute: expiresAt)"
+  SharedLayerArn:
+    Type: String
+    Description: "Layer ARN providing shared utilities for lambdas"
 
 Resources:
   MessagesDynamoDb:
@@ -62,6 +65,7 @@ Resources:
         ReleaseVersion: !Ref ReleaseVersion
         EnvTag: !Ref EnvTag
         ServiceTag: !Ref ServiceTag
+        SharedLayerArn: !Ref SharedLayerArn
         # From DynamoDB nested stack
         MessagesTableName: !GetAtt MessagesDynamoDb.Outputs.MessagesTableName
         MessagesTableArn: !GetAtt MessagesDynamoDb.Outputs.MessagesTableArn

@@ -72,3 +72,7 @@ Outputs:
   HealthCheckArn:
     Description: "The ARN of the healthcheck lambda"
     Value: !GetAtt HealthCheck.Arn
+
+  SharedLayerArn:
+    Description: "ARN of the shared utilities layer"
+    Value: !Ref SharedLayer

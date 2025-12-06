@@ -51,6 +51,7 @@ Resources:
         ReleaseVersion: !Ref ReleaseVersion
         EnvTag: !Ref EnvTag
         ServiceTag: !Ref ServiceTag
+        SharedLayerArn: !GetAtt HealthStack.Outputs.SharedLayerArn
         EnableTTL: "false"
 
 Outputs:

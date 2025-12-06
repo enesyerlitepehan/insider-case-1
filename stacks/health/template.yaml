@@ -50,3 +50,7 @@ Outputs:
   HealthApiUrl:
     Description: "Invoke URL for the healthcheck endpoint"
     Value: !GetAtt HealthApiGateway.Outputs.HealthApiUrl
+
+  SharedLayerArn:
+    Description: "ARN of the shared utilities layer"
+    Value: !GetAtt HealthLambdas.Outputs.SharedLayerArn

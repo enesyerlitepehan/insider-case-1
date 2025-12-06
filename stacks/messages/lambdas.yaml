@@ -27,6 +27,8 @@ Parameters:
     Type: String
   MainQueueUrl:
     Type: String
+  SharedLayerArn:
+    Type: String
 
 Globals:
   Function:
@@ -46,6 +48,8 @@ Globals:
         AppName: !Ref AppName
         EnvName: !Ref EnvName
         Suffix: !Ref Suffix
+    Layers:
+      - !Ref SharedLayerArn
 
 Resources:
   GetMessagesFunction:
@@ -80,6 +84,10 @@ Resources:
         Platform: node
         External:
           - aws-sdk
+          - /opt/nodejs/*
+          - /opt/nodejs/*
+          - /opt/nodejs/*
+          - /opt/nodejs/*
 
   PostMessagesFunction:
     Type: AWS::Serverless::Function

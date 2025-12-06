@@ -1,4 +1,4 @@
-import { messageService } from '../../../layers/nodejs/utils/container';
+import { messageService } from '/opt/nodejs/utils/container';
 
 type APIGatewayProxyEvent = {
   body: string | null;
