@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SQS resources for message sending (main queue + DLQ)
+
+Parameters:
+  AppName:
+    Type: String
+  EnvName:
+    Type: String
+  Suffix:
+    Type: String
+    Default: ""
+  ReleaseVersion:
+    Type: String
+  EnvTag:
+    Type: String
+  ServiceTag:
+    Type: String
+
+Resources:
+  MessageSendDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AppName}-${EnvName}${Suffix}-message-send-dlq"
+      Tags:
+        - Key: app
+          Value: !Ref AppName
+        - Key: env
+          Value: !Ref EnvTag
+        - Key: service
+          Value: !Ref ServiceTag
+        - Key: version
+          Value: !Ref ReleaseVersion
+
+  MessageSendQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AppName}-${EnvName}${Suffix}-message-send-queue"
+      VisibilityTimeout: 60
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt MessageSendDLQ.Arn
+        maxReceiveCount: 5
+      Tags:
+        - Key: app
+          Value: !Ref AppName
+        - Key: env
+          Value: !Ref EnvTag
+        - Key: service
+          Value: !Ref ServiceTag
+        - Key: version
+          Value: !Ref ReleaseVersion
+
+Outputs:
+  MainQueueArn:
+    Description: ARN of the main message send queue
+    Value: !GetAtt MessageSendQueue.Arn
+
+  MainQueueUrl:
+    Description: URL of the main message send queue
+    Value: !Ref MessageSendQueue
+
+  DlqArn:
+    Description: ARN of the dead-letter queue
+    Value: !GetAtt MessageSendDLQ.Arn

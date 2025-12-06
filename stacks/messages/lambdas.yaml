@@ -1,0 +1,140 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Dispatcher and Worker lambdas for message sending
+
+Parameters:
+  AppName:
+    Type: String
+  EnvName:
+    Type: String
+  Suffix:
+    Type: String
+    Default: ""
+  ReleaseVersion:
+    Type: String
+  EnvTag:
+    Type: String
+  ServiceTag:
+    Type: String
+  MessagesTableName:
+    Type: String
+  MessagesTableArn:
+    Type: String
+  MessagesRWPolicyArn:
+    Type: String
+  MainQueueArn:
+    Type: String
+  MainQueueUrl:
+    Type: String
+
+Globals:
+  Function:
+    Handler: app.lambdaHandler
+    Runtime: nodejs22.x
+    Timeout: 10
+    MemorySize: 128
+    Architectures:
+      - arm64
+    Tags:
+      env: !Ref EnvTag
+      service: !Ref ServiceTag
+      Application: !Ref AppName
+      ReleaseVersion: !Ref ReleaseVersion
+    Environment:
+      Variables:
+        AppName: !Ref AppName
+        EnvName: !Ref EnvName
+        Suffix: !Ref Suffix
+
+Resources:
+  MessageDispatcher:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${EnvName}-${AppName}-message-dispatcher${Suffix}"
+      Description: "Periodically scans for pending messages and enqueues jobs (stub)"
+      CodeUri: ../../functions/messages/dispatcher/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource: !Sub "${MessagesTableArn}/index/*"
+            - Effect: Allow
+              Action:
+                - dynamodb:UpdateItem
+              Resource: !Ref MessagesTableArn
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !Ref MainQueueArn
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+          PENDING_LIMIT: "2"
+      Events:
+        DispatchSchedule:
+          Type: Schedule
+          Properties:
+            Description: "Run dispatcher periodically"
+            Name: !Sub "${EnvName}-${AppName}-message-dispatcher-schedule${Suffix}"
+            Schedule: rate(1 minute)
+
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        Minify: false
+        Sourcemap: true
+        Target: es2020
+        Platform: node
+        External:
+          - aws-sdk
+
+  MessageSendWorker:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${EnvName}-${AppName}-message-send-worker${Suffix}"
+      Description: "Consumes SQS messages and logs payloads (stub)"
+      CodeUri: ../../functions/messages/worker/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+              Resource: !Ref MessagesTableArn
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+          WEBHOOK_URL: ""
+          MAX_MESSAGE_LENGTH: "200"
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !Ref MainQueueArn
+            BatchSize: 1
+            Enabled: true
+
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        Minify: false
+        Sourcemap: true
+        Target: es2020
+        Platform: node
+        External:
+          - aws-sdk
+
+Outputs:
+  MessageDispatcherArn:
+    Description: ARN of the dispatcher lambda
+    Value: !GetAtt MessageDispatcher.Arn
+
+  MessageSendWorkerArn:
+    Description: ARN of the worker lambda
+    Value: !GetAtt MessageSendWorker.Arn
