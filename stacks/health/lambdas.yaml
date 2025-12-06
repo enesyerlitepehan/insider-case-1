@@ -36,12 +36,26 @@ Globals:
         Suffix: !Ref Suffix
 
 Resources:
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "${EnvName}-${AppName}-shared${Suffix}"
+      Description: "Shared utilities (logger, helpers)"
+      ContentUri: ../../layers/
+      CompatibleRuntimes:
+        - nodejs22.x
+      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: nodejs22.x
+
   HealthCheck:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${EnvName}-${AppName}-healthcheck${Suffix}"
       Description: "Returns a 200 OK for load balancers or uptime checks"
       CodeUri: ../../functions/healthcheck/
+      Layers:
+        - !Ref SharedLayer
     Metadata:
       BuildMethod: esbuild
       BuildProperties:

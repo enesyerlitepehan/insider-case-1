@@ -7,6 +7,7 @@ on:
       - "template.yaml"
       - "stacks/**"
       - "functions/**"
+      - "layers/**"
       - ".github/workflows/**"
 
 concurrency:
@@ -32,6 +33,12 @@ jobs:
 
       - name: Install build tooling (esbuild)
         run: npm install --prefix functions/healthcheck
+
+      - name: Install layer dependencies
+        run: npm install --prefix layers/nodejs
+
+      - name: Build layer TypeScript
+        run: npm run build --prefix layers/nodejs
 
       - name: Debug OIDC payload (safe)
         run: |

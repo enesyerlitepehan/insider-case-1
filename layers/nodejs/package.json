@@ -1,0 +1,16 @@
+{
+  "name": "insider-case-layer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared Lambda layer for insider-case (logger and utilities)",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "dependencies": {
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
