@@ -34,6 +34,12 @@ jobs:
       - name: Install build tooling (esbuild)
         run: npm install --prefix functions/healthcheck
 
+      - name: Install dispatcher deps
+        run: npm install --prefix functions/messages/dispatcher
+
+      - name: Install worker deps
+        run: npm install --prefix functions/messages/worker
+
       - name: Install layer dependencies
         run: npm install --prefix layers/nodejs
 

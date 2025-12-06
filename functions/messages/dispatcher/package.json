@@ -1,0 +1,9 @@
+{
+  "name": "message-dispatcher",
+  "version": "0.0.1",
+  "description": "Dispatcher lambda for messages",
+  "license": "MIT",
+  "dependencies": {
+    "esbuild": "^0.21.5"
+  }
+}
