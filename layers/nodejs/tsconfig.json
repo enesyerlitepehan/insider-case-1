@@ -6,8 +6,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": ".",
-    "rootDir": ".",
     "declaration": false,
     "sourceMap": false
   },
