@@ -34,19 +34,27 @@ jobs:
       - name: Debug OIDC payload (safe)
         run: |
           set -euo pipefail
-          # Fetch ID token with audience=sts.amazonaws.com
           url="${ACTIONS_ID_TOKEN_REQUEST_URL}"
           if [[ "$url" == *"?"* ]]; then
             url="${url}&audience=sts.amazonaws.com"
           else
             url="${url}?audience=sts.amazonaws.com"
           fi
-          resp=$(curl -sSf -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "$url")
-          token=$(echo "$resp" | python - <<'PY'
+          resp=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "$url" || true)
+          if [ -z "$resp" ]; then
+            echo "Empty response from OIDC endpoint" >&2
+            exit 1
+          fi
+          token=$(python - <<'PY'
           import json, sys
-          print(json.load(sys.stdin)["value"])
+          data = sys.stdin.read()
+          try:
+              print(json.loads(data)["value"])
+          except Exception as e:
+              print("Failed to parse OIDC response:", data, file=sys.stderr)
+              raise
           PY
-          )
+          <<< "$resp")
                     echo "::add-mask::$token"
                     export TOKEN="$token"
                     python - <<'PY'
