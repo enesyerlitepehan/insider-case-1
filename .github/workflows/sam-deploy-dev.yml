@@ -31,42 +31,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug OIDC payload (safe)
-        run: |
-          set -euo pipefail
-          url="${ACTIONS_ID_TOKEN_REQUEST_URL}"
-          if [[ "$url" == *"?"* ]]; then
-            url="${url}&audience=sts.amazonaws.com"
-          else
-            url="${url}?audience=sts.amazonaws.com"
-          fi
-          resp=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "$url" || true)
-          if [ -z "$resp" ]; then
-            echo "Empty response from OIDC endpoint" >&2
-            exit 1
-          fi
-          token=$(python - <<'PY'
-          import json, sys
-          data = sys.stdin.read()
-          try:
-              print(json.loads(data)["value"])
-          except Exception as e:
-              print("Failed to parse OIDC response:", data, file=sys.stderr)
-              raise
-          PY
-          <<< "$resp")
-                    echo "::add-mask::$token"
-                    export TOKEN="$token"
-                    python - <<'PY'
-          import os, base64, json
-          token = os.environ["TOKEN"]
-          payload = token.split('.')[1]
-          payload += '=' * (-len(payload) % 4)
-          decoded = json.loads(base64.urlsafe_b64decode(payload))
-          print("OIDC payload:")
-          print(json.dumps(decoded, indent=2))
-          PY
-
       - name: Configure AWS credentials (dev)
         uses: aws-actions/configure-aws-credentials@v4
         with:
