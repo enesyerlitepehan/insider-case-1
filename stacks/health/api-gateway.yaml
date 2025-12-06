@@ -78,11 +78,6 @@ Resources:
       RestApiId: !Ref HealthApiGateway
       DeploymentId: !Ref HealthApiDeployment
       StageName: !Sub "${EnvName}${Suffix}"
-      MethodSettings:
-        - ResourcePath: "/*"
-          HttpMethod: "*"
-          LoggingLevel: INFO
-          DataTraceEnabled: false
       Tags:
         - Key: env
           Value: !Ref EnvTag
