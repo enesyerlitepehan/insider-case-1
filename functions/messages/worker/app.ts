@@ -1,6 +1,6 @@
-import { messageSendService } from '../../../layers/nodejs/utils/container';
-import { logger } from '../../../layers/nodejs/utils/logger';
-import { SendMessageJobPayload } from '../../../layers/nodejs/utils/services/types';
+import { messageSendService } from 'insider-case-layer/utils/container';
+import { logger } from 'insider-case-layer/utils/logger';
+import { SendMessageJobPayload } from 'insider-case-layer/utils/services/types';
 
 type SQSEventRecord = {
   messageId: string;
