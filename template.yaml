@@ -40,7 +40,36 @@ Resources:
         EnvTag: !Ref EnvTag
         ServiceTag: !Ref ServiceTag
 
+  MessagesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./stacks/messages/template.yaml
+      Parameters:
+        AppName: !Ref AppName
+        EnvName: !Ref EnvName
+        Suffix: !Ref Suffix
+        ReleaseVersion: !Ref ReleaseVersion
+        EnvTag: !Ref EnvTag
+        ServiceTag: !Ref ServiceTag
+        EnableTTL: "false"
+
 Outputs:
   HealthApiUrl:
     Description: "Invoke URL for the healthcheck API"
     Value: !GetAtt HealthStack.Outputs.HealthApiUrl
+
+  MessagesTableName:
+    Description: "Name of the Messages DynamoDB table"
+    Value: !GetAtt MessagesStack.Outputs.MessagesTableName
+
+  MessagesTableArn:
+    Description: "ARN of the Messages DynamoDB table"
+    Value: !GetAtt MessagesStack.Outputs.MessagesTableArn
+
+  MessagesGSIStatusCreatedAt:
+    Description: "Name of the GSI for status + createdAt"
+    Value: !GetAtt MessagesStack.Outputs.GSIStatusCreatedAtName
+
+  MessagesRWPolicyArn:
+    Description: "Managed policy ARN with RW/Query access to Messages table and its GSIs"
+    Value: !GetAtt MessagesStack.Outputs.MessagesRWPolicyArn

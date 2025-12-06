@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Nested stack that provisions the DynamoDB Messages table and related IAM policy.
+
+Parameters:
+  AppName:
+    Type: String
+  EnvName:
+    Type: String
+  Suffix:
+    Type: String
+    Default: ""
+  ReleaseVersion:
+    Type: String
+  EnvTag:
+    Type: String
+  ServiceTag:
+    Type: String
+  EnableTTL:
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: >
+      Enable TTL on the table (attribute: expiresAt)
+
+Resources:
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AppName}-${EnvName}${Suffix}-Messages"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: GSI_StatusCreatedAt
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: !Equals [!Ref EnableTTL, "true"]
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: app
+          Value: !Ref AppName
+        - Key: env
+          Value: !Ref EnvTag
+        - Key: service
+          Value: !Ref ServiceTag
+        - Key: version
+          Value: !Ref ReleaseVersion
+
+  MessagesRWPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "${AppName}-${EnvName}${Suffix}-MessagesRW"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:PutItem
+              - dynamodb:GetItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:DescribeTable
+            Resource:
+              - !GetAtt MessagesTable.Arn
+              - !Sub "${MessagesTable.Arn}/index/*"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Messages table settings
+        Parameters:
+          - EnableTTL
+
+Outputs:
+  MessagesTableName:
+    Description: Name of the DynamoDB Messages table
+    Value: !Ref MessagesTable
+    Export:
+      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-TableName"
+  MessagesTableArn:
+    Description: ARN of the DynamoDB Messages table
+    Value: !GetAtt MessagesTable.Arn
+    Export:
+      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-TableArn"
+  GSIStatusCreatedAtName:
+    Description: Name of the GSI used for querying by status and createdAt
+    Value: GSI_StatusCreatedAt
+    Export:
+      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-GSIStatusCreatedAt"
+  MessagesRWPolicyArn:
+    Description: Managed policy ARN granting R/W/Query permissions for Messages table and GSIs
+    Value: !Ref MessagesRWPolicy
+    Export:
+      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-RWPolicyArn"
