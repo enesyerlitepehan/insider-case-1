@@ -112,7 +112,8 @@ jobs:
           sam deploy \
             --template-file .aws-sam/build/template.yaml \
             --stack-name "${STACK_NAME}" \
-            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            # Requires CAPABILITY_NAMED_IAM because we create an AWS::IAM::ManagedPolicy with a fixed name
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --region "${AWS_REGION}" \
             --resolve-s3 \
             --no-confirm-changeset \
