@@ -29,3 +29,4 @@ After deploy the health endpoint is available at the `HealthApiUrl` stack output
 
 > Notes
 - Lambda is written in TypeScript and built with SAM-managed `esbuild`. Entry point is `functions/healthcheck/app.ts`.
+- `esbuild` is included as a dependency under `functions/healthcheck/package.json`. If you run locally, ensure `npm install --prefix functions/healthcheck` before `sam build` (SAM will install it automatically during build on CI).

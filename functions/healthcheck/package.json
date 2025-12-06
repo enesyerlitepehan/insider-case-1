@@ -1,0 +1,9 @@
+{
+  "name": "healthcheck",
+  "version": "0.0.1",
+  "description": "Healthcheck lambda (TypeScript, esbuild)",
+  "license": "MIT",
+  "dependencies": {
+    "esbuild": "^0.21.5"
+  }
+}

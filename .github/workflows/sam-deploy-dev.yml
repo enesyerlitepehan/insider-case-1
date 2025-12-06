@@ -31,6 +31,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install build tooling (esbuild)
+        run: npm install --prefix functions/healthcheck
+
       - name: Debug OIDC payload (safe)
         run: |
           set -euo pipefail
