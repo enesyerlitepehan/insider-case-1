@@ -101,6 +101,18 @@ jobs:
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v2
 
+      - name: Ensure stack is deployable (handle ROLLBACK_COMPLETE)
+        run: |
+          set -euo pipefail
+          status=$(aws cloudformation describe-stacks --stack-name "${STACK_NAME}" --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "NOT_FOUND")
+          echo "Current stack status: ${status}"
+          if [ "$status" = "ROLLBACK_COMPLETE" ]; then
+            echo "Deleting stack ${STACK_NAME} (was ROLLBACK_COMPLETE)..."
+            aws cloudformation delete-stack --stack-name "${STACK_NAME}"
+            aws cloudformation wait stack-delete-complete --stack-name "${STACK_NAME}"
+            echo "Deleted stack ${STACK_NAME}. Continuing with deploy."
+          fi
+
       - name: Build
         run: |
           set -euo pipefail
