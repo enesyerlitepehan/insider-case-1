@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "API Gateway fronting the healthcheck lambda"
+
+Parameters:
+  AppName:
+    Type: String
+  EnvName:
+    Type: String
+  Suffix:
+    Type: String
+  ReleaseVersion:
+    Type: String
+  EnvTag:
+    Type: String
+  ServiceTag:
+    Type: String
+  HealthCheckArn:
+    Type: String
+
+Resources:
+  HealthApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${EnvName}-${AppName}-api${Suffix}"
+      EndpointConfiguration:
+        Types:
+          - EDGE
+      Tags:
+        - Key: "ReleaseVersion"
+          Value: !Ref ReleaseVersion
+
+  HealthResource:
+    DependsOn:
+      - HealthApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt HealthApiGateway.RootResourceId
+      PathPart: "health"
+      RestApiId: !Ref HealthApiGateway
+
+  HealthGetMethod:
+    DependsOn:
+      - HealthResource
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref HealthApiGateway
+      ResourceId: !Ref HealthResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthCheckArn}/invocations"
+
+  HealthLambdaPermission:
+    DependsOn:
+      - HealthGetMethod
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref HealthCheckArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HealthApiGateway}/*/GET/health"
+
+  HealthApiDeployment:
+    DependsOn:
+      - HealthGetMethod
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref HealthApiGateway
+
+  HealthApiStage:
+    DependsOn:
+      - HealthApiDeployment
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref HealthApiGateway
+      DeploymentId: !Ref HealthApiDeployment
+      StageName: !Sub "${EnvName}${Suffix}"
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          LoggingLevel: INFO
+          DataTraceEnabled: false
+      Tags:
+        - Key: env
+          Value: !Ref EnvTag
+        - Key: service
+          Value: !Ref ServiceTag
+
+Outputs:
+  HealthApiUrl:
+    Description: "Invoke URL for GET /health"
+    Value: !Sub "https://${HealthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}${Suffix}/health"

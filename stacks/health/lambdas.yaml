@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "Healthcheck lambda resources"
+
+Parameters:
+  AppName:
+    Type: String
+  EnvName:
+    Type: String
+  Suffix:
+    Type: String
+  ReleaseVersion:
+    Type: String
+  EnvTag:
+    Type: String
+  ServiceTag:
+    Type: String
+
+Globals:
+  Function:
+    Handler: app.lambdaHandler
+    Runtime: nodejs22.x
+    Timeout: 5
+    MemorySize: 128
+    Architectures:
+      - arm64
+    Tags:
+      env: !Ref EnvTag
+      service: !Ref ServiceTag
+      Application: !Ref AppName
+      ReleaseVersion: !Ref ReleaseVersion
+    Environment:
+      Variables:
+        AppName: !Ref AppName
+        EnvName: !Ref EnvName
+        Suffix: !Ref Suffix
+
+Resources:
+  HealthCheck:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${EnvName}-${AppName}-healthcheck${Suffix}"
+      Description: "Returns a 200 OK for load balancers or uptime checks"
+      CodeUri: ../../functions/healthcheck/
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        Minify: false
+        Sourcemap: true
+        Target: es2020
+        Platform: node
+        External:
+          - aws-sdk
+
+Outputs:
+  HealthCheckArn:
+    Description: "The ARN of the healthcheck lambda"
+    Value: !GetAtt HealthCheck.Arn

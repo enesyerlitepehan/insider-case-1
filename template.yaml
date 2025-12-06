@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  insider-case base SAM template
+
+  Bootstraps a sample healthcheck stack (lambda + API Gateway) following the
+  nested stack layout used in unified-payment-service.
+
+Parameters:
+  AppName:
+    Type: String
+    Default: insider-case
+  EnvName:
+    Type: String
+    Default: dev
+  Suffix:
+    Type: String
+    Default: ""
+    Description: "Optional suffix for parallel environments (e.g. -blue)"
+  ReleaseVersion:
+    Type: String
+    Default: "0.0.1"
+  EnvTag:
+    Type: String
+    Default: dev
+  ServiceTag:
+    Type: String
+    Default: insider-case
+
+Resources:
+  HealthStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./stacks/health/template.yaml
+      Parameters:
+        AppName: !Ref AppName
+        EnvName: !Ref EnvName
+        Suffix: !Ref Suffix
+        ReleaseVersion: !Ref ReleaseVersion
+        EnvTag: !Ref EnvTag
+        ServiceTag: !Ref ServiceTag
+
+Outputs:
+  HealthApiUrl:
+    Description: "Invoke URL for the healthcheck API"
+    Value: !GetAtt HealthStack.Outputs.HealthApiUrl
