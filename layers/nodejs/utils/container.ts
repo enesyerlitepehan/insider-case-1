@@ -5,6 +5,14 @@ import { MessageSendService, MessageSendServiceConfig } from './services/message
 import { HttpClientLike, SqsClientLike } from './services/types';
 import { logger } from './logger';
 
+// Minimal declarations so this module can compile even if @types/node is not installed in CI
+// (CI may run `npm run build` without installing devDependencies for the layer.)
+// These declarations only affect typing; runtime behavior relies on actual Node globals.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const require: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const process: any;
+
 // Build external clients lazily and keep them shared across invocations
 
 // SQS client wrapper using AWS SDK v2 (if available at runtime) or a logging fallback
