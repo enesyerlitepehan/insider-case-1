@@ -41,7 +41,7 @@ Resources:
     Properties:
       LayerName: !Sub "${EnvName}-${AppName}-shared${Suffix}"
       Description: "Shared utilities (logger, helpers)"
-      ContentUri: ../../layers/
+      ContentUri: ../../layers/nodejs
       CompatibleRuntimes:
         - nodejs22.x
       RetentionPolicy: Retain

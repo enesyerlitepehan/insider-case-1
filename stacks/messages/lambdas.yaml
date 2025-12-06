@@ -85,9 +85,6 @@ Resources:
         External:
           - aws-sdk
           - /opt/nodejs/*
-          - /opt/nodejs/*
-          - /opt/nodejs/*
-          - /opt/nodejs/*
 
   PostMessagesFunction:
     Type: AWS::Serverless::Function
@@ -118,6 +115,7 @@ Resources:
         Platform: node
         External:
           - aws-sdk
+          - /opt/nodejs/*
 
   MessageDispatcher:
     Type: AWS::Serverless::Function
@@ -163,6 +161,7 @@ Resources:
         Platform: node
         External:
           - aws-sdk
+          - /opt/nodejs/*
 
   MessageSendWorker:
     Type: AWS::Serverless::Function
@@ -201,6 +200,7 @@ Resources:
         Platform: node
         External:
           - aws-sdk
+          - /opt/nodejs/*
 
 Outputs:
   MessageDispatcherArn:

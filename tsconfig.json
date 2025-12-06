@@ -1,23 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "baseUrl": "./",
+    "paths": {
+      "/opt/nodejs/*": ["layers/nodejs/*"],
+      "@/*": ["./*"]
+    },
+    "lib": ["ES2020"],
+    "module": "CommonJS",
+    "target": "ES2022",
+    "sourceMap": true,
+    "pretty": true,
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "strict": false,
+    "noEmit": false,
+    "declaration": false,
+    "resolveJsonModule": true
   },
-  "include": ["src"]
+  "exclude": ["node_modules", "**/__tests__/**/*", "**/*.test.ts", "**/tests/**/*"],
+  "include": ["layers/**/*", "functions/**/*", "stacks/**/*", "middlewares/**/*"]
 }
