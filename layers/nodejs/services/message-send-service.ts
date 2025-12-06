@@ -1,6 +1,6 @@
-import { Message } from '../models/message';
-import { MessageRepository } from '../repositories/message-repository';
-import { logger } from '../logger';
+import { Message } from '../utils/models/message';
+import { MessageRepository } from './dynamodb-services/message-dynamodb-service';
+import { logger } from '../utils/logger';
 import {
   ClockLike,
   HttpClientLike,

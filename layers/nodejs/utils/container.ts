@@ -1,8 +1,8 @@
-import { DynamoDbMessageRepository, MessageRepository } from './repositories/message-repository';
-import { MessageService } from './services/message-service';
-import { MessageDispatchService } from './services/message-dispatch-service';
-import { MessageSendService, MessageSendServiceConfig } from './services/message-send-service';
-import { HttpClientLike, SqsClientLike } from './services/types';
+import { MessageDynamoDbService, MessageRepository } from '../services/dynamodb-services/message-dynamodb-service';
+import { MessageService } from '../services/message-service';
+import { MessageDispatchService } from '../services/message-dispatch-service';
+import { MessageSendService, MessageSendServiceConfig } from '../services/message-send-service';
+import { HttpClientLike, SqsClientLike } from '../services/types';
 import { logger } from './logger';
 
 // Minimal declarations so this module can compile even if @types/node is not installed in CI
@@ -54,16 +54,7 @@ const httpClient: HttpClientLike = {
   },
 };
 
-// DynamoDB DocumentClient (optional, handlers should not use directly)
-function buildDocClient(): any | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const AWS = require('aws-sdk');
-    return new AWS.DynamoDB.DocumentClient();
-  } catch (_e) {
-    return null;
-  }
-}
+// No direct AWS SDK v2 DocumentClient usage for repository; we use AWS SDK v3 in the DynamoDB service
 
 // Environment accessors
 const env = {
@@ -75,8 +66,7 @@ const env = {
 };
 
 // Shared instances
-const docClient = buildDocClient();
-const repository: MessageRepository = new DynamoDbMessageRepository(docClient, env.messagesTable);
+const repository: MessageRepository = new MessageDynamoDbService(env.messagesTable);
 const sqsClient: SqsClientLike = new AwsSqsClient();
 
 const messageServiceInstance = new MessageService(repository);

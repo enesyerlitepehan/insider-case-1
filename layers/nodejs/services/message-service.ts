@@ -1,5 +1,5 @@
-import { CreateMessageInput, Message } from '../models/message';
-import { MessageRepository } from '../repositories/message-repository';
+import { CreateMessageInput, Message } from '../utils/models/message';
+import { MessageRepository } from './dynamodb-services/message-dynamodb-service';
 import { ClockLike, SystemClock } from './types';
 
 function uuidv4(): string {

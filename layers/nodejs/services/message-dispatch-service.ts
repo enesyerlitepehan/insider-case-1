@@ -1,4 +1,4 @@
-import { MessageRepository } from '../repositories/message-repository';
+import { MessageRepository } from './dynamodb-services/message-dynamodb-service';
 import { ClockLike, SqsClientLike } from './types';
 
 export class MessageDispatchService {

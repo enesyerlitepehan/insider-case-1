@@ -1,4 +1,4 @@
-import { Message } from '../models/message';
+import { Message } from '../utils/models/message';
 
 // Job payload enqueued to SQS by dispatcher
 export interface SendMessageJobPayload {
