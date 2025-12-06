@@ -1,5 +1,5 @@
-import { messageDispatchService } from 'insider-case-layer/utils/container';
-import { logger } from 'insider-case-layer/utils/logger';
+import { messageDispatchService } from '../../../layers/nodejs/utils/container';
+import { logger } from '../../../layers/nodejs/utils/logger';
 
 export const schedulerHandler = async () => {
   const startedAt = new Date().toISOString();
