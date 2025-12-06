@@ -101,6 +101,34 @@ jobs:
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v2
 
+      - name: Resolve/Create SAM artifacts S3 bucket
+        run: |
+          set -euo pipefail
+
+          # If a bucket is explicitly provided via env, use it as-is
+          if [ -n "${SAM_ARTIFACTS_BUCKET:-}" ]; then
+            echo "Using provided SAM_ARTIFACTS_BUCKET: ${SAM_ARTIFACTS_BUCKET}"
+            echo "S3_BUCKET=${SAM_ARTIFACTS_BUCKET}" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          REGION="${AWS_REGION}"
+          BUCKET="sam-artifacts-${ACCOUNT_ID}-${REGION}"
+
+          if aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null; then
+            echo "Bucket exists: $BUCKET"
+          else
+            echo "Creating bucket: $BUCKET in $REGION"
+            if [ "$REGION" = "us-east-1" ]; then
+              aws s3api create-bucket --bucket "$BUCKET"
+            else
+              aws s3api create-bucket --bucket "$BUCKET" --create-bucket-configuration LocationConstraint="$REGION"
+            fi
+          fi
+
+          echo "S3_BUCKET=$BUCKET" >> "$GITHUB_ENV"
+
       - name: Build
         run: |
           set -euo pipefail
@@ -115,7 +143,7 @@ jobs:
             # Requires CAPABILITY_NAMED_IAM because we create an AWS::IAM::ManagedPolicy with a fixed name
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --region "${AWS_REGION}" \
-            --resolve-s3 \
+            --s3-bucket "${S3_BUCKET}" \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
