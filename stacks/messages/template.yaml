@@ -26,6 +26,9 @@ Parameters:
     Description: >
       Enable TTL on the table (attribute: expiresAt)
 
+Conditions:
+  EnableTTLCond: !Equals [ !Ref EnableTTL, "true" ]
+
 Resources:
   MessagesTable:
     Type: AWS::DynamoDB::Table
@@ -53,9 +56,14 @@ Resources:
             ProjectionType: ALL
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
-      TimeToLiveSpecification:
-        AttributeName: expiresAt
-        Enabled: !Equals [!Ref EnableTTL, "true"]
+      # Include TTL block only when explicitly enabled to avoid using Fn::Equals directly in properties
+      TimeToLiveSpecification: !If
+        - EnableTTLCond
+        -
+          AttributeName: expiresAt
+          Enabled: true
+        -
+          Ref: AWS::NoValue
       SSESpecification:
         SSEEnabled: true
       Tags:
