@@ -14,7 +14,7 @@ sam build \
 
 sam deploy \
   --stack-name insider-case-health \
-  --template-file template.yaml \
+  --template-file .aws-sam/build/template.yaml \
   --capabilities CAPABILITY_IAM \
   --parameter-overrides \
     AppName=insider-case \
