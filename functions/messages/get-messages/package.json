@@ -4,7 +4,6 @@
   "description": "GET /messages lambda",
   "license": "MIT",
   "dependencies": {
-    "esbuild": "^0.21.5",
-    "insider-case-layer": "file:../../../layers/nodejs"
+    "esbuild": "^0.21.5"
   }
 }

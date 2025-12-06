@@ -4,7 +4,6 @@
   "description": "Worker lambda for messages",
   "license": "MIT",
   "dependencies": {
-    "esbuild": "^0.21.5",
-    "insider-case-layer": "file:../../../layers/nodejs"
+    "esbuild": "^0.21.5"
   }
 }
