@@ -80,7 +80,6 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - insider-case-layer
 
   PostMessagesFunction:
     Type: AWS::Serverless::Function
@@ -111,7 +110,6 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - insider-case-layer
 
   MessageDispatcher:
     Type: AWS::Serverless::Function
@@ -157,7 +155,6 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - insider-case-layer
 
   MessageSendWorker:
     Type: AWS::Serverless::Function
@@ -196,7 +193,6 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - insider-case-layer
 
 Outputs:
   MessageDispatcherArn:
