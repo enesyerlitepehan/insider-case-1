@@ -1,3 +1,7 @@
+import { messageSendService } from '../../../layers/nodejs/utils/container';
+import { logger } from '../../../layers/nodejs/utils/logger';
+import { SendMessageJobPayload } from '../../../layers/nodejs/utils/services/types';
+
 type SQSEventRecord = {
   messageId: string;
   body: string;
@@ -8,26 +12,31 @@ type SQSEvent = {
   Records: SQSEventRecord[];
 };
 
-export const lambdaHandler = async (event: SQSEvent) => {
-  console.log("message-send-worker invoked");
-  const table = process.env.MESSAGES_TABLE;
-  const webhookUrl = process.env.WEBHOOK_URL;
-  const maxLen = process.env.MAX_MESSAGE_LENGTH;
-
-  console.log("env", { table, webhookUrl, maxLen });
+export const workerHandler = async (event: SQSEvent) => {
+  logger.info('message-send-worker invoked', { count: event?.Records?.length ?? 0 });
 
   for (const rec of event.Records ?? []) {
     try {
-      const payload = JSON.parse(rec.body);
-      console.log("record", { messageId: rec.messageId, payload, attributes: rec.attributes });
+      const payload: SendMessageJobPayload = JSON.parse(rec.body);
+      logger.info('worker processing', { messageId: rec.messageId, payloadId: payload?.id });
+      await messageSendService.processSendJob(payload);
+      logger.info('worker processed', { payloadId: payload?.id });
     } catch (e) {
-      console.log("record(raw)", { messageId: rec.messageId, body: rec.body, attributes: rec.attributes });
+      logger.error('worker error', {
+        sqsMessageId: rec.messageId,
+        body: rec.body,
+        error: (e as Error).message,
+      });
+      // Re-throw to signal failure and allow SQS/Lambda to retry
+      throw e;
     }
   }
 
-  // Successful no-op; SQS will remove messages after successful return
   return {
     statusCode: 200,
     body: JSON.stringify({ ok: true, processed: event.Records?.length ?? 0 }),
   } as any;
 };
+
+// Keep default export name expected by SAM Globals.Handler
+export const lambdaHandler = workerHandler;

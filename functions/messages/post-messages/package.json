@@ -1,0 +1,9 @@
+{
+  "name": "post-messages",
+  "version": "0.0.1",
+  "description": "Lambda for POST /messages",
+  "license": "MIT",
+  "dependencies": {
+    "esbuild": "^0.21.5"
+  }
+}

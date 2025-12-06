@@ -48,6 +48,81 @@ Globals:
         Suffix: !Ref Suffix
 
 Resources:
+  GetMessagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${EnvName}-${AppName}-get-messages${Suffix}"
+      Description: "Lambda for GET /messages"
+      CodeUri: ../../functions/messages/get-messages/
+      Handler: app.lambdaHandler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource: !Ref MessagesTableArn
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource: !Sub "${MessagesTableArn}/index/*"
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+      Events:
+        MessagesGet:
+          Type: Api
+          Properties:
+            Path: /messages
+            Method: GET
+
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        Minify: false
+        Sourcemap: true
+        Target: es2020
+        Platform: node
+        External:
+          - aws-sdk
+
+  PostMessagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${EnvName}-${AppName}-post-messages${Suffix}"
+      Description: "Lambda for POST /messages"
+      CodeUri: ../../functions/messages/post-messages/
+      Handler: app.lambdaHandler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource: !Ref MessagesTableArn
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+      Events:
+        MessagesPost:
+          Type: Api
+          Properties:
+            Path: /messages
+            Method: POST
+
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        Minify: false
+        Sourcemap: true
+        Target: es2020
+        Platform: node
+        External:
+          - aws-sdk
+
   MessageDispatcher:
     Type: AWS::Serverless::Function
     Properties:
@@ -72,6 +147,7 @@ Resources:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
           PENDING_LIMIT: "2"
+          MESSAGE_SEND_QUEUE_URL: !Ref MainQueueUrl
       Events:
         DispatchSchedule:
           Type: Schedule

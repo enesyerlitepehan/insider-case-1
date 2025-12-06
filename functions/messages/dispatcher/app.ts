@@ -1,15 +1,21 @@
-export const lambdaHandler = async () => {
-  const now = new Date().toISOString();
-  const env = {
-    MESSAGES_TABLE: process.env.MESSAGES_TABLE,
-    PENDING_LIMIT: process.env.PENDING_LIMIT,
-  };
+import { messageDispatchService } from '../../../layers/nodejs/utils/container';
+import { logger } from '../../../layers/nodejs/utils/logger';
 
-  console.log("message-dispatcher invoked", { now, env });
+export const schedulerHandler = async () => {
+  const startedAt = new Date().toISOString();
+  const pendingLimitRaw = process.env.PENDING_LIMIT;
+  const pendingLimit = Number.isFinite(Number(pendingLimitRaw)) ? Number(pendingLimitRaw) : 2;
 
-  // Stub: real dispatch logic will be implemented later
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ ok: true, now }),
-  } as any;
+  logger.info('message-dispatcher start', { startedAt, pendingLimit });
+  try {
+    const enqueued = await messageDispatchService.dispatchPendingMessages(pendingLimit);
+    logger.info('message-dispatcher done', { enqueued });
+    return { statusCode: 200, body: JSON.stringify({ ok: true, enqueued }) } as any;
+  } catch (e) {
+    logger.error('message-dispatcher error', { error: (e as Error).message });
+    throw e; // allow failure for monitoring/alarms
+  }
 };
+
+// Keep default export name expected by SAM Globals.Handler
+export const lambdaHandler = schedulerHandler;

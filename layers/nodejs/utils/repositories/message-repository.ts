@@ -6,12 +6,21 @@ export interface MessageRepository {
   getById(id: string): Promise<Message | null>;
   // Must query GSI_StatusCreatedAt with status = 'PENDING', order by createdAt ASC, limit N
   getPending(limit: number): Promise<Message[]>;
+  // Generic status query for read APIs (e.g., list sent messages)
+  getByStatus(status: MessageStatus, limit?: number): Promise<Message[]>;
   // Should support adding messageId, sentAt, etc. via extraFields
   updateStatus(
     id: string,
     status: MessageStatus,
     extraFields?: Partial<Message>
   ): Promise<void>;
+  // Conditional status transition; returns true if updated, false if condition failed
+  updateStatusIfCurrent(
+    id: string,
+    expectedCurrent: MessageStatus,
+    nextStatus: MessageStatus,
+    extraFields?: Partial<Message>
+  ): Promise<boolean>;
   // Increment retryCount atomically
   incrementRetryCount(id: string): Promise<void>;
 }
@@ -38,11 +47,24 @@ export class DynamoDbMessageRepository implements MessageRepository {
     throw new Error('Not implemented');
   }
 
+  async getByStatus(_status: MessageStatus, _limit?: number): Promise<Message[]> {
+    throw new Error('Not implemented');
+  }
+
   async updateStatus(
     _id: string,
     _status: MessageStatus,
     _extraFields?: Partial<Message>
   ): Promise<void> {
+    throw new Error('Not implemented');
+  }
+
+  async updateStatusIfCurrent(
+    _id: string,
+    _expectedCurrent: MessageStatus,
+    _nextStatus: MessageStatus,
+    _extraFields?: Partial<Message>
+  ): Promise<boolean> {
     throw new Error('Not implemented');
   }
 
