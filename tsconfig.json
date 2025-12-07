@@ -24,5 +24,7 @@
     "resolveJsonModule": true
   },
   "exclude": ["node_modules", "**/__tests__/**/*", "**/*.test.ts", "**/tests/**/*"],
-  "include": ["layers/**/*", "functions/**/*", "stacks/**/*", "middlewares/**/*"]
+  "include": ["layers/**/*", "functions/**/*", "stacks/**/*",
+    "layers/nodejs/middlewares/**/*"
+  ]
 }
