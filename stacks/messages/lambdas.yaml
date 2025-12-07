@@ -181,7 +181,6 @@ Resources:
       FunctionName: !Sub "${EnvName}-${AppName}-message-send-worker${Suffix}"
       Description: "Consumes SQS messages and logs payloads (stub)"
       CodeUri: ../../src/functions/messages/worker/
-      ReservedConcurrentExecutions: 1
       Policies:
         - Statement:
             - Effect: Allow
