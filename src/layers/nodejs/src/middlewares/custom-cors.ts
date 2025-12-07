@@ -1,4 +1,3 @@
-import httpCors from '@middy/http-cors';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { corsPolicies } from './cors-policies';
 import { logger } from '../utils/logger';
@@ -12,6 +11,26 @@ type MiddlewareRequest = {
     body?: string;
   };
   internal: Record<string, any>;
+};
+
+// Middy v6 packages are ESM-only. Since this layer compiles to CommonJS,
+// we must load @middy/http-cors via dynamic import at runtime.
+type HttpCorsFactory = (
+  opts: {
+    origin?: string | boolean;
+    credentials?: boolean;
+    headers?: string;
+    methods?: string;
+  },
+) => { after?: (req: any) => any; onError?: (req: any) => any };
+
+let httpCorsFactory: HttpCorsFactory | null = null;
+const getHttpCors = async (): Promise<HttpCorsFactory> => {
+  if (!httpCorsFactory) {
+    const mod: any = await import('@middy/http-cors');
+    httpCorsFactory = mod.default ?? mod;
+  }
+  return httpCorsFactory!;
 };
 
 export const customCors = () => ({
@@ -34,6 +53,7 @@ export const customCors = () => ({
     const config = matched?.[1] ?? { origin: '*' };
 
     // store httpCors middleware to run after/onError
+    const httpCors = await getHttpCors();
     request.internal._cors = httpCors({
       origin: config.origin,
       credentials: config.credentials,

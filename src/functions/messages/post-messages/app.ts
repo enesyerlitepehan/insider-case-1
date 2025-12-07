@@ -72,11 +72,7 @@ const baseHandler = async (
   }
 };
 
-export const lambdaHandler = middy(baseHandler).use(
-  // Ensure CORS headers are applied for all responses
-  customCors(),
-)
-  // Validate that body exists and is JSON
+export const lambdaHandler = middy(baseHandler)
+  .use(customCors())
   .use(bodyChecker())
-  // Do auth after body check so we still attach CORS for 401 responses via customCors
   .use(basicAuth());

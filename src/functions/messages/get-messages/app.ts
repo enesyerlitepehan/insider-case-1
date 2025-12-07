@@ -39,7 +39,6 @@ const baseHandler = async (
 
 export const lambdaHandler = middy(baseHandler)
   .use(
-    // Ensure CORS headers are applied for all responses (including early exits)
     customCors(),
   )
   .use(basicAuth({ headers: baseHeaders }));
