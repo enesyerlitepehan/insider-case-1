@@ -1,6 +1,7 @@
 import { messageSendService } from '/opt/nodejs/utils/container';
 import { logger } from '/opt/nodejs/utils/logger';
 import type { SendMessageJobPayload } from '/opt/nodejs/services/types';
+import { ApiResponse } from '/opt/nodejs/utils/api-response';
 
 type SQSEventRecord = {
   messageId: string;
@@ -12,7 +13,7 @@ type SQSEvent = {
   Records: SQSEventRecord[];
 };
 
-export const workerHandler = async (event: SQSEvent) => {
+export const baseHandler = async (event: SQSEvent) => {
   logger.info('message-send-worker invoked', { count: event?.Records?.length ?? 0 });
 
   for (const rec of event.Records ?? []) {
@@ -32,11 +33,12 @@ export const workerHandler = async (event: SQSEvent) => {
     }
   }
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ ok: true, processed: event.Records?.length ?? 0 }),
-  } as any;
+  const apiResponse = new ApiResponse();
+  return apiResponse.createSuccessResponse(200, {
+    message: 'Worker processed messages',
+    data: { ok: true, processed: event.Records?.length ?? 0 },
+  });
 };
 
 // Keep default export name expected by SAM Globals.Handler
-export const lambdaHandler = workerHandler;
+export const lambdaHandler = baseHandler;

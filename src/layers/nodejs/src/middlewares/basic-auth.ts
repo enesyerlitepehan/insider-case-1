@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { corsPolicies } from './cors-policies';
 
 type MiddyRequest = { event: APIGatewayProxyEvent };
 
@@ -6,9 +7,25 @@ type BasicAuthOptions = {
   headers?: Record<string, string>;
 };
 
+// Default CORS headers for messages endpoints to avoid duplication in handlers
+const corsConfig = {
+  credentials: false,
+  headers: 'Content-Type,Authorization',
+  methods: 'GET,POST,OPTIONS',
+  ...corsPolicies['/messages'],
+};
+
+const baseHeaders: Record<string, string> = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': corsConfig.origin,
+  'Access-Control-Allow-Credentials': corsConfig.credentials ? 'true' : 'false',
+  'Access-Control-Allow-Headers': corsConfig.headers,
+  'Access-Control-Allow-Methods': corsConfig.methods,
+};
+
 const unauthorized = (headers?: Record<string, string>) => ({
   statusCode: 401,
-  headers: { 'WWW-Authenticate': 'Basic', ...(headers ?? {}) },
+  headers: { 'WWW-Authenticate': 'Basic', ...(headers ?? baseHeaders) },
   body: JSON.stringify({ error: true, message: 'Unauthorized' }),
 });
 

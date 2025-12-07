@@ -12,7 +12,7 @@ export const bodyChecker = () => {
         request.event.headers?.['content-type'] ||
         '';
 
-      const isJson = typeof contentType === 'string' && contentType.includes('application/json');
+      const isJson = contentType.includes('application/json');
 
       if (!request.event.body || !isJson) {
         return {

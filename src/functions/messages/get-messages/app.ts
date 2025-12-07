@@ -1,51 +1,32 @@
 import middy from '@middy/core';
 import { basicAuth } from '/opt/nodejs/middlewares/basic-auth';
-import { corsPolicies } from '/opt/nodejs/middlewares/cors-policies';
 import { messageService } from '/opt/nodejs/utils/container';
+import { ApiResponse } from '/opt/nodejs/utils/api-response';
+import { ApiError } from '/opt/nodejs/enums/api.enum';
+import type { HTTPResponse } from '/opt/nodejs/utils/common';
 
 type APIGatewayProxyEvent = {
   body: string | null;
 };
 
-type APIGatewayProxyResult = {
-  statusCode: number;
-  headers?: Record<string, string>;
-  body: string;
-};
-
-const corsConfig = corsPolicies['/messages'] ?? {
-  origin: '*',
-  credentials: false,
-  headers: 'Content-Type,Authorization',
-  methods: 'GET,POST,OPTIONS',
-};
-
-const baseHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': corsConfig.origin,
-  ...(corsConfig.credentials ? { 'Access-Control-Allow-Credentials': 'true' } : {}),
-  ...(corsConfig.headers ? { 'Access-Control-Allow-Headers': corsConfig.headers } : {}),
-  ...(corsConfig.methods ? { 'Access-Control-Allow-Methods': corsConfig.methods } : {}),
-};
-
 const baseHandler = async (
   _event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResult> => {
+): Promise<HTTPResponse> => {
+  const apiResponse = new ApiResponse();
   try {
     const messages = await messageService.listSentMessages();
-    return {
-      statusCode: 200,
-      headers: baseHeaders,
-      body: JSON.stringify(messages),
-    };
+    return apiResponse.createSuccessResponse(200, {
+      message: 'Messages fetched successfully',
+      data: messages,
+    });
   } catch (error) {
     console.error('Error in GET /messages', error);
-    return {
-      statusCode: 500,
-      headers: baseHeaders,
-      body: JSON.stringify({ error: 'Internal server error' }),
-    };
+    return apiResponse.createErrorResponse(
+      500,
+      'Internal server error',
+      ApiError.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 
-export const lambdaHandler = middy(baseHandler).use(basicAuth({ headers: baseHeaders }));
+export const lambdaHandler = middy(baseHandler).use(basicAuth());

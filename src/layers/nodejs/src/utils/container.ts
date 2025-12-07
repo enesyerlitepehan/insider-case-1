@@ -5,6 +5,7 @@ import { MessageSendService, MessageSendServiceConfig } from '../services/messag
 import { HttpClientLike, SqsClientLike } from '../services/types';
 import { logger } from './logger';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
+import axios from 'axios';
 
 // Minimal declarations so this module can compile even if @types/node is not installed in CI
 // (CI may run `npm run build` without installing devDependencies for the layer.)
@@ -49,21 +50,24 @@ class AwsSqsClient implements SqsClientLike {
   }
 }
 
-// Minimal HTTP client using global fetch (Node 18+)
+// HTTP client implemented with axios
+const axiosClient = axios.create({
+  // Do not throw for non-2xx; let callers inspect status
+  validateStatus: () => true,
+  // Optional timeout from env, default 10s
+  timeout: Number(process.env.HTTP_TIMEOUT_MS || 10000),
+});
+
 const httpClient: HttpClientLike = {
   async post(url, body, headers) {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(headers ?? {}) },
-      body: JSON.stringify(body ?? {}),
+    const resp = await axiosClient.post(url, body ?? {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...(headers ?? {}),
+      },
     });
-    let data: any = null;
-    try {
-      data = await resp.json();
-    } catch (_) {
-      // ignore non-JSON bodies
-    }
-    return { status: resp.status, data };
+    return { status: resp.status, data: resp.data };
   },
 };
 

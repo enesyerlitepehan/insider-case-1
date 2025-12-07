@@ -1,7 +1,8 @@
 import { messageDispatchService } from '/opt/nodejs/utils/container';
 import { logger } from '/opt/nodejs/utils/logger';
+import { ApiResponse } from '/opt/nodejs/utils/api-response';
 
-export const schedulerHandler = async () => {
+export const baseHandler = async () => {
   const startedAt = new Date().toISOString();
   const pendingLimitRaw = process.env.PENDING_LIMIT;
   const pendingLimit = Number.isFinite(Number(pendingLimitRaw)) ? Number(pendingLimitRaw) : 2;
@@ -10,7 +11,11 @@ export const schedulerHandler = async () => {
   try {
     const enqueued = await messageDispatchService.dispatchPendingMessages(pendingLimit);
     logger.info('message-dispatcher done', { enqueued });
-    return { statusCode: 200, body: JSON.stringify({ ok: true, enqueued }) } as any;
+    const apiResponse = new ApiResponse();
+    return apiResponse.createSuccessResponse(200, {
+      message: 'Dispatch completed',
+      data: { ok: true, enqueued },
+    });
   } catch (e) {
     logger.error('message-dispatcher error', { error: (e as Error).message });
     throw e; // allow failure for monitoring/alarms
@@ -18,4 +23,4 @@ export const schedulerHandler = async () => {
 };
 
 // Keep default export name expected by SAM Globals.Handler
-export const lambdaHandler = schedulerHandler;
+export const lambdaHandler = baseHandler;
