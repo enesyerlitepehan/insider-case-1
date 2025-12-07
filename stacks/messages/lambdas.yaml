@@ -179,7 +179,7 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
-          WEBHOOK_URL: ""
+          WEBHOOK_URL: "https://webhook.site/19ca50a1-821e-4b3d-8f50-ed54d5581437"
           MAX_MESSAGE_LENGTH: "200"
       Events:
         SQSTrigger:
