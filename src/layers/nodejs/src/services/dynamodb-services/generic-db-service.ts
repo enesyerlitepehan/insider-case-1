@@ -1,7 +1,20 @@
-import { createItem, getItem, query, queryWithMeta, scan, updateItem } from './dynamodb-service';
-import { DynamoDBItem, DynamoDbUpdateInput } from '../../interfaces/dynamo-db.interface';
+import {
+  createItem,
+  getItem,
+  query,
+  queryWithMeta,
+  scan,
+  updateItem,
+} from './dynamodb-service';
+import {
+  DynamoDBItem,
+  DynamoDbUpdateInput,
+} from '../../interfaces/dynamo-db.interface';
 
-export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDbUpdateInput> {
+export default class GenericDbService<
+  T extends DynamoDBItem,
+  U extends DynamoDbUpdateInput,
+> {
   tableName: string;
   partitionKey: string;
 
@@ -10,7 +23,10 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
     this.partitionKey = partitionKey;
   }
 
-  async getItem(partitionKeyData: string, fields?: string[]): Promise<T | undefined> {
+  async getItem(
+    partitionKeyData: string,
+    fields?: string[],
+  ): Promise<T | undefined> {
     const expressionAttributeNames: Record<string, string> = {};
 
     let ProjectionExpression: string | undefined = undefined;
@@ -18,7 +34,7 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
       for (const field of fields) {
         expressionAttributeNames[`#${field}`] = field;
       }
-      ProjectionExpression = fields.map(f => `#${f}`).join(', ');
+      ProjectionExpression = fields.map((f) => `#${f}`).join(', ');
     }
 
     const params = {
@@ -36,7 +52,11 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
     return result.Item as T | undefined;
   }
 
-  async getItemsByGSI(gsiIndexName: string, gsiIndexKey: string, gsiValue: string): Promise<T[]> {
+  async getItemsByGSI(
+    gsiIndexName: string,
+    gsiIndexKey: string,
+    gsiValue: string,
+  ): Promise<T[]> {
     const params = {
       TableName: this.tableName,
       IndexName: gsiIndexName,
@@ -79,7 +99,7 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
     };
     let updatedExpression: string[] = [];
     const keys = Object.keys(updateItems) as (keyof U)[];
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const val = updateItems[key];
       params.ExpressionAttributeNames[`#${String(key)}`] = String(key);
       params.ExpressionAttributeValues[`:${String(key)}`] = val;
@@ -103,7 +123,7 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
       for (const field of fields) {
         expressionAttributeNames[`#${field}`] = field;
       }
-      ProjectionExpression = fields.map(f => `#${f}`).join(', ');
+      ProjectionExpression = fields.map((f) => `#${f}`).join(', ');
     }
 
     const params = {
@@ -201,7 +221,7 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
       for (const field of projectionFields) {
         expressionAttributeNames[`#${field}`] = field;
       }
-      ProjectionExpression = projectionFields.map(f => `#${f}`).join(', ');
+      ProjectionExpression = projectionFields.map((f) => `#${f}`).join(', ');
     }
 
     const fullParams = {
@@ -214,7 +234,8 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
       ScanIndexForward: !sortDescending,
     };
 
-    const { ProjectionExpression: _omitProjection, ...countParamsBase } = fullParams;
+    const { ProjectionExpression: _omitProjection, ...countParamsBase } =
+      fullParams;
 
     if (countParamsBase.ExpressionAttributeNames) {
       const usedInKeyCondition = new Set<string>();
@@ -227,8 +248,8 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
       }
 
       countParamsBase.ExpressionAttributeNames = Object.fromEntries(
-        Object.entries(countParamsBase.ExpressionAttributeNames).filter(([key]) =>
-          usedInKeyCondition.has(key),
+        Object.entries(countParamsBase.ExpressionAttributeNames).filter(
+          ([key]) => usedInKeyCondition.has(key),
         ),
       );
     }
@@ -244,11 +265,18 @@ export default class GenericDbService<T extends DynamoDBItem, U extends DynamoDb
       undefined,
     );
 
-    let dataResult = await queryWithMeta(fullParams, itemsToFetch, lastEvaluatedKey);
+    let dataResult = await queryWithMeta(
+      fullParams,
+      itemsToFetch,
+      lastEvaluatedKey,
+    );
 
     // Instead of directly assigning the sliced array to dataResult
     if (sliceFlag) {
-      const slicedItems = dataResult.items.slice(itemsToFetch - limit, itemsToFetch);
+      const slicedItems = dataResult.items.slice(
+        itemsToFetch - limit,
+        itemsToFetch,
+      );
       return {
         items: slicedItems,
         lastEvaluatedKey: dataResult.lastEvaluatedKey,

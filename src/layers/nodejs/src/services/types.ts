@@ -14,12 +14,8 @@ export interface HttpClientLike {
   post<T = unknown>(
     url: string,
     body: unknown,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): Promise<{ status: number; data: T }>;
-}
-
-export interface RedisClientLike {
-  set(key: string, value: string, ttlSeconds?: number): Promise<void>;
 }
 
 export interface ClockLike {

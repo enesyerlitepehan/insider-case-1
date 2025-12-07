@@ -5,7 +5,7 @@ import { ClockLike, SystemClock } from './types';
 function uuidv4(): string {
   // Lightweight UUID v4 generator without external deps
   // Falls back to Math.random based implementation
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
@@ -16,7 +16,7 @@ export class MessageService {
   constructor(
     private readonly repo: MessageRepository,
     private readonly clock: ClockLike = SystemClock,
-    private readonly idFactory: () => string = uuidv4
+    private readonly idFactory: () => string = uuidv4,
   ) {}
 
   async listSentMessages(): Promise<Message[]> {

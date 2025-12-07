@@ -2,13 +2,13 @@ name: Deploy - Dev
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ['master']
     paths:
-      - "template.yaml"
-      - "stacks/**"
-      - "src/functions/**"
-      - "src/layers/**"
-      - ".github/workflows/**"
+      - 'template.yaml'
+      - 'stacks/**'
+      - 'src/functions/**'
+      - 'src/layers/**'
+      - '.github/workflows/**'
 
 concurrency:
   group: sam-deploy-dev-${{ github.ref }}
@@ -85,12 +85,12 @@ jobs:
           print(data.get("value", ""))
           PY
           )
-          
+
                     if [ -z "$token" ]; then
                       echo "Token field missing in OIDC response" >&2
                       exit 1
                     fi
-          
+
                     echo "::add-mask::$token"
                     export TOKEN="$token"
                     python - <<'PY'

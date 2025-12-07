@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   Health stack
@@ -48,9 +48,9 @@ Resources:
 
 Outputs:
   HealthApiUrl:
-    Description: "Invoke URL for the healthcheck endpoint"
+    Description: 'Invoke URL for the healthcheck endpoint'
     Value: !GetAtt HealthApiGateway.Outputs.HealthApiUrl
 
   SharedLayerArn:
-    Description: "ARN of the shared utilities layer"
+    Description: 'ARN of the shared utilities layer'
     Value: !GetAtt HealthLambdas.Outputs.SharedLayerArn

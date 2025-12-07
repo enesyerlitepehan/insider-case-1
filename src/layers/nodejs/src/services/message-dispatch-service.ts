@@ -22,7 +22,7 @@ export class MessageDispatchService {
         m.id,
         'PENDING',
         'IN_PROGRESS',
-        { updatedAt: this.clock.now().toISOString() }
+        { updatedAt: this.clock.now().toISOString() },
       );
       if (!ok) {
         continue; // skip if someone else took it

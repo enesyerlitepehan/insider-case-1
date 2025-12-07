@@ -6,6 +6,7 @@ This document covers setup, env vars, flow, and where to find the API spec. A li
 - **Basic Auth:** `AUTH_USER: <set>` / `AUTH_PASS: <set>`
 
 ## Setup
+
 - Requirements: Node.js 18+/npm, AWS SAM CLI (for deploy), AWS account with Lambda/SQS/DynamoDB permissions.
 - Install deps:
   ```sh
@@ -15,6 +16,7 @@ This document covers setup, env vars, flow, and where to find the API spec. A li
 - Build: `npm run build` (root) builds functions and the shared layer.
 
 ## Environment Variables (used in stacks)
+
 - Global: `AppName`, `EnvName`, `Suffix`, `ReleaseVersion`, `EnvTag`, `ServiceTag`
 - API auth: `AUTH_USER`, `AUTH_PASS` (leave empty to disable basic auth)
 - Dispatcher:
@@ -37,14 +39,16 @@ This document covers setup, env vars, flow, and where to find the API spec. A li
 - GET `/messages`: returns `SENT` messages.
 
 ## Swagger/OpenAPI
+
 - `docs/openapi.yaml` contains the API schema. You can view locally with e.g. `npx swagger-ui-watcher docs/openapi.yaml`.
 
 ## Notes
+
 - If webhook response lacks `messageId`, the send is treated as failure and retried.
 - Exceeding `MAX_MESSAGE_LENGTH` is rejected at POST validation and marked FAILED at send stage.
 - Production endpoints (current):
   - Health: `https://mg3gv5c2rb.execute-api.us-west-2.amazonaws.com/dev/health`
   - Messages: `https://82jfwu9id7.execute-api.us-west-2.amazonaws.com/dev/messages`
   - Basic Auth: `testuser` / `testpass`
-- Redis caching (bonus requirement) is not enabled; no Redis client/env is configured in the container.
 - Rate pacing: dispatcher runs every minute and enqueues up to 24 messages; worker consumes SQS in batches of 2 with ~2.5s delay between sends, keeping the “~2 messages per ~5 seconds” rule while still moving ~24 messages per minute.
+- Redis caching (bonus requirement) is not enabled; no Redis client/env is configured in the container.

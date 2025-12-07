@@ -138,7 +138,10 @@ export class MessageDynamoDbService implements MessageRepository {
     extraFields?: Partial<Message>,
   ): Promise<boolean> {
     const now = new Date().toISOString();
-    const updates: Record<string, any> = { status: nextStatus, ...(extraFields ?? {}) };
+    const updates: Record<string, any> = {
+      status: nextStatus,
+      ...(extraFields ?? {}),
+    };
     if (!('updatedAt' in updates)) {
       updates['updatedAt'] = now;
     }

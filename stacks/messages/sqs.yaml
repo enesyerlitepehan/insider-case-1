@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   SQS resources for message sending (main queue + DLQ)
@@ -10,7 +10,7 @@ Parameters:
     Type: String
   Suffix:
     Type: String
-    Default: ""
+    Default: ''
   ReleaseVersion:
     Type: String
   EnvTag:
@@ -22,7 +22,7 @@ Resources:
   MessageSendDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${AppName}-${EnvName}${Suffix}-message-send-dlq"
+      QueueName: !Sub '${AppName}-${EnvName}${Suffix}-message-send-dlq'
       Tags:
         - Key: app
           Value: !Ref AppName
@@ -36,7 +36,7 @@ Resources:
   MessageSendQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${AppName}-${EnvName}${Suffix}-message-send-queue"
+      QueueName: !Sub '${AppName}-${EnvName}${Suffix}-message-send-queue'
       VisibilityTimeout: 60
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt MessageSendDLQ.Arn

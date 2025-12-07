@@ -87,7 +87,7 @@ test('MessageService.listSentMessages delegates to repo.getByStatus("SENT")', as
         };
       }
       return typeof v === 'function' ? v.bind(target) : v;
-    }
+    },
   }) as unknown as typeof base.repo;
 
   const { setGetByStatusResult } = base;
@@ -102,7 +102,7 @@ test('MessageService.listSentMessages delegates to repo.getByStatus("SENT")', as
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
       sentAt: '2024-01-01T00:00:00.000Z',
-      messageId: 'm-1'
+      messageId: 'm-1',
     },
   ];
   setGetByStatusResult(sample);

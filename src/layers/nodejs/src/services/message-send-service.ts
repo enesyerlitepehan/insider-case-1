@@ -4,7 +4,6 @@ import { logger } from '../utils/logger';
 import {
   ClockLike,
   HttpClientLike,
-  RedisClientLike,
   SystemClock,
   WebhookSuccessResponse,
   SendMessageJobPayload,
@@ -14,7 +13,6 @@ export interface MessageSendServiceConfig {
   webhookUrl: string;
   authKey?: string; // for x-ins-auth-key
   maxMessageLength: number; // e.g., 160
-  cacheTtlSeconds?: number; // optional Redis TTL
 }
 
 export class MessageSendService {
@@ -23,7 +21,6 @@ export class MessageSendService {
     private readonly http: HttpClientLike,
     private readonly config: MessageSendServiceConfig,
     private readonly clock: ClockLike = SystemClock,
-    private readonly redis?: RedisClientLike,
   ) {}
 
   async processSendJob(job: SendMessageJobPayload): Promise<void> {
@@ -73,7 +70,11 @@ export class MessageSendService {
     };
 
     try {
-      const resp = await this.http.post<WebhookSuccessResponse>(url, body, headers);
+      const resp = await this.http.post<WebhookSuccessResponse>(
+        url,
+        body,
+        headers,
+      );
       if (resp.status < 200 || resp.status >= 300) {
         await this.repo.incrementRetryCount(id);
         const err = new Error(`Webhook non-2xx status: ${resp.status}`);
@@ -98,23 +99,19 @@ export class MessageSendService {
         updatedAt: nowIso,
       } as Partial<Message>);
 
-      if (this.redis) {
-        try {
-          const key = `message:${id}`;
-          const value = JSON.stringify({ messageId, sentAt: nowIso });
-          await this.redis.set(key, value, this.config.cacheTtlSeconds);
-        } catch (e) {
-          // Cache failures should not break main flow
-          logger.error('SendJob: redis cache error', { id, error: (e as Error).message });
-        }
-      }
     } catch (e) {
       // Let SQS retry by throwing; retryCount already incremented above on known cases.
       // For network or other unexpected errors, also increment retry count.
       if ((e as any)?.status === undefined) {
-        try { await this.repo.incrementRetryCount(id); } catch {}
+        try {
+          await this.repo.incrementRetryCount(id);
+        } catch {}
       }
-      logger.error('SendJob: webhook send failed', { id, status: (e as any)?.status, error: (e as Error).message });
+      logger.error('SendJob: webhook send failed', {
+        id,
+        status: (e as any)?.status,
+        error: (e as Error).message,
+      });
       throw e;
     }
   }

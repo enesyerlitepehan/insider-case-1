@@ -19,10 +19,12 @@ const baseHandler = async (
 ): Promise<HTTPResponse> => {
   const apiResponse = new ApiResponse();
   try {
-    const payload = event.body as { messages: { to: string; content: string }[] };
+    const payload = event.body as {
+      messages: { to: string; content: string }[];
+    };
 
     const created = await Promise.all(
-      (payload.messages ?? []).map(msg =>
+      (payload.messages ?? []).map((msg) =>
         messageService.createMessage({
           to: msg.to,
           content: msg.content,

@@ -4,11 +4,14 @@ import { ApiResponse } from '/opt/nodejs/utils/api-response';
 
 export const baseHandler = async () => {
   const pendingLimitRaw = process.env.PENDING_LIMIT;
-  const pendingLimit = Number.isFinite(Number(pendingLimitRaw)) ? Number(pendingLimitRaw) : 2;
+  const pendingLimit = Number.isFinite(Number(pendingLimitRaw))
+    ? Number(pendingLimitRaw)
+    : 2;
 
   logger.info('message-dispatcher started');
   try {
-    const enqueued = await messageDispatchService.dispatchPendingMessages(pendingLimit);
+    const enqueued =
+      await messageDispatchService.dispatchPendingMessages(pendingLimit);
     logger.info('message-dispatcher completed');
     const apiResponse = new ApiResponse();
     return apiResponse.createSuccessResponse(200, {

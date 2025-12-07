@@ -1,6 +1,6 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: "Healthcheck lambda resources"
+Description: 'Healthcheck lambda resources'
 
 Parameters:
   AppName:
@@ -39,8 +39,8 @@ Resources:
   SharedLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: !Sub "${EnvName}-${AppName}-shared${Suffix}"
-      Description: "Shared utilities (logger, helpers)"
+      LayerName: !Sub '${EnvName}-${AppName}-shared${Suffix}'
+      Description: 'Shared utilities (logger, helpers)'
       ContentUri: ../../src/layers/nodejs/src
       CompatibleRuntimes:
         - nodejs22.x
@@ -51,8 +51,8 @@ Resources:
   HealthCheck:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${EnvName}-${AppName}-healthcheck${Suffix}"
-      Description: "Returns a 200 OK for load balancers or uptime checks"
+      FunctionName: !Sub '${EnvName}-${AppName}-healthcheck${Suffix}'
+      Description: 'Returns a 200 OK for load balancers or uptime checks'
       CodeUri: ../../src/functions/healthcheck/
       Layers:
         - !Ref SharedLayer
@@ -71,9 +71,9 @@ Resources:
 
 Outputs:
   HealthCheckArn:
-    Description: "The ARN of the healthcheck lambda"
+    Description: 'The ARN of the healthcheck lambda'
     Value: !GetAtt HealthCheck.Arn
 
   SharedLayerArn:
-    Description: "ARN of the shared utilities layer"
+    Description: 'ARN of the shared utilities layer'
     Value: !Ref SharedLayer

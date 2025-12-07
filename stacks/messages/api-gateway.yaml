@@ -1,6 +1,6 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: "API Gateway for messages endpoints"
+Description: 'API Gateway for messages endpoints'
 
 Parameters:
   AppName:
@@ -24,7 +24,7 @@ Resources:
   MessagesApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Sub "${EnvName}-${AppName}-messages-api${Suffix}"
+      Name: !Sub '${EnvName}-${AppName}-messages-api${Suffix}'
       EndpointConfiguration:
         Types:
           - EDGE
@@ -38,7 +38,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt MessagesApiGateway.RootResourceId
-      PathPart: "messages"
+      PathPart: 'messages'
       RestApiId: !Ref MessagesApiGateway
 
   MessagesGet:
@@ -53,7 +53,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetMessagesArn}/invocations"
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetMessagesArn}/invocations'
 
   MessagesPost:
     DependsOn:
@@ -67,7 +67,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMessagesArn}/invocations"
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMessagesArn}/invocations'
 
   MessagesOptions:
     DependsOn:
@@ -105,7 +105,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GetMessagesArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MessagesApiGateway}/*/GET/messages"
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MessagesApiGateway}/*/GET/messages'
 
   MessagesPostPermission:
     DependsOn:
@@ -115,7 +115,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref PostMessagesArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MessagesApiGateway}/*/POST/messages"
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MessagesApiGateway}/*/POST/messages'
 
   MessagesApiDeployment:
     DependsOn:
@@ -133,7 +133,7 @@ Resources:
     Properties:
       RestApiId: !Ref MessagesApiGateway
       DeploymentId: !Ref MessagesApiDeployment
-      StageName: !Sub "${EnvName}${Suffix}"
+      StageName: !Sub '${EnvName}${Suffix}'
       Tags:
         - Key: env
           Value: !Ref EnvTag
@@ -142,5 +142,5 @@ Resources:
 
 Outputs:
   MessagesApiUrl:
-    Description: "Invoke URL for messages API"
-    Value: !Sub "https://${MessagesApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}${Suffix}/messages"
+    Description: 'Invoke URL for messages API'
+    Value: !Sub 'https://${MessagesApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}${Suffix}/messages'

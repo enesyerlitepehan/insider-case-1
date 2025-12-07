@@ -13,10 +13,7 @@ const levels = {
   success: 4,
 };
 
-const customFormat = combine(
-  format.errors({ stack: true }),
-  format.json(),
-);
+const customFormat = combine(format.errors({ stack: true }), format.json());
 
 export const logger = createLogger({
   format: combine(customFormat),

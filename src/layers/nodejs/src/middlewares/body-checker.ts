@@ -1,7 +1,11 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 type MiddyRequest = { event: APIGatewayProxyEvent } & {
-  response?: { statusCode: number; headers?: Record<string, string>; body?: string };
+  response?: {
+    statusCode: number;
+    headers?: Record<string, string>;
+    body?: string;
+  };
 };
 
 export const bodyChecker = () => {

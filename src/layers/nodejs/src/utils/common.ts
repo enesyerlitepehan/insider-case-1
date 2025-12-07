@@ -11,7 +11,7 @@ function isAllowedOrigin(origin?: string): boolean {
   if (!origin) return false; // service-to-service → no CORS needed
   try {
     const url = new URL(origin);
-    return ROOT_DOMAINS.some(root => {
+    return ROOT_DOMAINS.some((root) => {
       return (
         url.hostname === root || // exact match
         url.hostname.endsWith('.' + root) // any subdomain match
@@ -31,7 +31,9 @@ export class httpResponse {
 
     this.response = {
       headers: {
-        ...(originAllowed ? { 'Access-Control-Allow-Origin': requestOrigin } : {}),
+        ...(originAllowed
+          ? { 'Access-Control-Allow-Origin': requestOrigin }
+          : {}),
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Allow-Credentials': true,
@@ -53,7 +55,8 @@ export class httpResponse {
     this.response.headers['Access-Control-Allow-Headers'] = 'GET,OPTIONS';
     this.response.headers['Content-Security-Policy'] =
       "default-src 'self'; script-src 'self'; object-src 'none';";
-    this.response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
+    this.response.headers['Strict-Transport-Security'] =
+      'max-age=31536000; includeSubDomains';
     return this;
   }
 

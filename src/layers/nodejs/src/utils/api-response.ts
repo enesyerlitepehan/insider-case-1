@@ -26,7 +26,10 @@ export class ApiResponse {
     this.httpResponse = new httpResponse();
   }
 
-  createSuccessResponse<T = any>(statusCode: number, responseBody: ResponseBody<T>) {
+  createSuccessResponse<T = any>(
+    statusCode: number,
+    responseBody: ResponseBody<T>,
+  ) {
     return this.httpResponse
       .statusCode(statusCode)
       .body({

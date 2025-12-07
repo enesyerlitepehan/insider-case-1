@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   insider-case base SAM template
@@ -15,11 +15,11 @@ Parameters:
     Default: dev
   Suffix:
     Type: String
-    Default: ""
-    Description: "Optional suffix for parallel environments (e.g. -blue)"
+    Default: ''
+    Description: 'Optional suffix for parallel environments (e.g. -blue)'
   ReleaseVersion:
     Type: String
-    Default: "0.0.1"
+    Default: '0.0.1'
   EnvTag:
     Type: String
     Default: dev
@@ -28,22 +28,14 @@ Parameters:
     Default: insider-case
   AuthUser:
     Type: String
-    Default: "testuser"
+    Default: 'testuser'
     NoEcho: true
-    Description: "Basic auth username for messages API (blank disables auth)"
+    Description: 'Basic auth username for messages API (blank disables auth)'
   AuthPass:
     Type: String
-    Default: "testpass"
+    Default: 'testpass'
     NoEcho: true
-    Description: "Basic auth password for messages API (blank disables auth)"
-  RedisUrl:
-    Type: String
-    Default: ""
-    Description: "Redis connection URL for worker cache (optional)"
-  RedisTtlSeconds:
-    Type: String
-    Default: "0"
-    Description: "Default Redis TTL for cached entries (seconds, optional)"
+    Description: 'Basic auth password for messages API (blank disables auth)'
 
 Resources:
   HealthStack:
@@ -69,34 +61,32 @@ Resources:
         ReleaseVersion: !Ref ReleaseVersion
         EnvTag: !Ref EnvTag
         ServiceTag: !Ref ServiceTag
-        EnableTTL: "false"
+        EnableTTL: 'false'
         SharedLayerArn: !GetAtt HealthStack.Outputs.SharedLayerArn
         AuthUser: !Ref AuthUser
         AuthPass: !Ref AuthPass
-        RedisUrl: !Ref RedisUrl
-        RedisTtlSeconds: !Ref RedisTtlSeconds
 
 Outputs:
   HealthApiUrl:
-    Description: "Invoke URL for the healthcheck API"
+    Description: 'Invoke URL for the healthcheck API'
     Value: !GetAtt HealthStack.Outputs.HealthApiUrl
 
   MessagesApiUrl:
-    Description: "Invoke URL for the messages API"
+    Description: 'Invoke URL for the messages API'
     Value: !GetAtt MessagesStack.Outputs.MessagesApiUrl
 
   MessagesTableName:
-    Description: "Name of the Messages DynamoDB table"
+    Description: 'Name of the Messages DynamoDB table'
     Value: !GetAtt MessagesStack.Outputs.MessagesTableName
 
   MessagesTableArn:
-    Description: "ARN of the Messages DynamoDB table"
+    Description: 'ARN of the Messages DynamoDB table'
     Value: !GetAtt MessagesStack.Outputs.MessagesTableArn
 
   MessagesGSIStatusCreatedAt:
-    Description: "Name of the GSI for status + createdAt"
+    Description: 'Name of the GSI for status + createdAt'
     Value: !GetAtt MessagesStack.Outputs.GSIStatusCreatedAtName
 
   MessagesRWPolicyArn:
-    Description: "Managed policy ARN with RW/Query access to Messages table and its GSIs"
+    Description: 'Managed policy ARN with RW/Query access to Messages table and its GSIs'
     Value: !GetAtt MessagesStack.Outputs.MessagesRWPolicyArn

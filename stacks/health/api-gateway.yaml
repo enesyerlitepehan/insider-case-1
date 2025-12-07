@@ -1,6 +1,6 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: "API Gateway fronting the healthcheck lambda"
+Description: 'API Gateway fronting the healthcheck lambda'
 
 Parameters:
   AppName:
@@ -22,12 +22,12 @@ Resources:
   HealthApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Sub "${EnvName}-${AppName}-api${Suffix}"
+      Name: !Sub '${EnvName}-${AppName}-api${Suffix}'
       EndpointConfiguration:
         Types:
           - EDGE
       Tags:
-        - Key: "ReleaseVersion"
+        - Key: 'ReleaseVersion'
           Value: !Ref ReleaseVersion
 
   HealthResource:
@@ -36,7 +36,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt HealthApiGateway.RootResourceId
-      PathPart: "health"
+      PathPart: 'health'
       RestApiId: !Ref HealthApiGateway
 
   HealthGetMethod:
@@ -51,7 +51,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthCheckArn}/invocations"
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthCheckArn}/invocations'
 
   HealthOptionsMethod:
     DependsOn:
@@ -89,7 +89,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref HealthCheckArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HealthApiGateway}/*/GET/health"
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HealthApiGateway}/*/GET/health'
 
   HealthApiDeployment:
     DependsOn:
@@ -106,7 +106,7 @@ Resources:
     Properties:
       RestApiId: !Ref HealthApiGateway
       DeploymentId: !Ref HealthApiDeployment
-      StageName: !Sub "${EnvName}${Suffix}"
+      StageName: !Sub '${EnvName}${Suffix}'
       Tags:
         - Key: env
           Value: !Ref EnvTag
@@ -115,5 +115,5 @@ Resources:
 
 Outputs:
   HealthApiUrl:
-    Description: "Invoke URL for GET /health"
-    Value: !Sub "https://${HealthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}${Suffix}/health"
+    Description: 'Invoke URL for GET /health'
+    Value: !Sub 'https://${HealthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}${Suffix}/health'

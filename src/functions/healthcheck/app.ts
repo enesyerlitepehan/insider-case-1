@@ -30,4 +30,4 @@ const baseHandler = async (event: ApiGatewayEvent) => {
   }
 };
 
-export const lambdaHandler = baseHandler
+export const lambdaHandler = baseHandler;

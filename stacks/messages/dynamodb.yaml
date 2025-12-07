@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   DynamoDB table and IAM policy for Messages
@@ -10,7 +10,7 @@ Parameters:
     Type: String
   Suffix:
     Type: String
-    Default: ""
+    Default: ''
   ReleaseVersion:
     Type: String
   EnvTag:
@@ -20,19 +20,19 @@ Parameters:
   EnableTTL:
     Type: String
     AllowedValues:
-      - "true"
-      - "false"
-    Default: "false"
-    Description: "Enable TTL on the table (attribute: expiresAt)"
+      - 'true'
+      - 'false'
+    Default: 'false'
+    Description: 'Enable TTL on the table (attribute: expiresAt)'
 
 Conditions:
-  EnableTTLCond: !Equals [ !Ref EnableTTL, "true" ]
+  EnableTTLCond: !Equals [!Ref EnableTTL, 'true']
 
 Resources:
   MessagesTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${AppName}-${EnvName}${Suffix}-Messages"
+      TableName: !Sub '${AppName}-${EnvName}${Suffix}-Messages'
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -57,11 +57,9 @@ Resources:
         PointInTimeRecoveryEnabled: true
       TimeToLiveSpecification: !If
         - EnableTTLCond
-        -
-          AttributeName: expiresAt
+        - AttributeName: expiresAt
           Enabled: true
-        -
-          Ref: AWS::NoValue
+        - Ref: AWS::NoValue
       SSESpecification:
         SSEEnabled: true
       Tags:
@@ -77,9 +75,9 @@ Resources:
   MessagesRWPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: !Sub "${AppName}-${EnvName}${Suffix}-MessagesRW"
+      ManagedPolicyName: !Sub '${AppName}-${EnvName}${Suffix}-MessagesRW'
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Action:
@@ -94,29 +92,29 @@ Resources:
               - dynamodb:DescribeTable
             Resource:
               - !GetAtt MessagesTable.Arn
-              - !Sub "${MessagesTable.Arn}/index/*"
+              - !Sub '${MessagesTable.Arn}/index/*'
 
 Outputs:
   MessagesTableName:
     Description: Name of the DynamoDB Messages table
     Value: !Ref MessagesTable
     Export:
-      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-TableName"
+      Name: !Sub '${AppName}-${EnvName}${Suffix}-Messages-TableName'
 
   MessagesTableArn:
     Description: ARN of the DynamoDB Messages table
     Value: !GetAtt MessagesTable.Arn
     Export:
-      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-TableArn"
+      Name: !Sub '${AppName}-${EnvName}${Suffix}-Messages-TableArn'
 
   GSIStatusCreatedAtName:
     Description: Name of the GSI used for querying by status and createdAt
     Value: GSI_StatusCreatedAt
     Export:
-      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-GSIStatusCreatedAt"
+      Name: !Sub '${AppName}-${EnvName}${Suffix}-Messages-GSIStatusCreatedAt'
 
   MessagesRWPolicyArn:
     Description: Managed policy ARN granting R/W/Query permissions for Messages table and GSIs
     Value: !Ref MessagesRWPolicy
     Export:
-      Name: !Sub "${AppName}-${EnvName}${Suffix}-Messages-RWPolicyArn"
+      Name: !Sub '${AppName}-${EnvName}${Suffix}-Messages-RWPolicyArn'

@@ -23,10 +23,16 @@
     "declaration": false,
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "**/__tests__/**/*", "**/*.test.ts", "**/tests/**/*"],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "**/tests/**/*"
+  ],
   "include": [
     "src/layers/**/*",
-    "src/functions/**/*", "stacks/**/*",
+    "src/functions/**/*",
+    "stacks/**/*",
     "src/layers/nodejs/src/middlewares/**/*"
   ]
 }

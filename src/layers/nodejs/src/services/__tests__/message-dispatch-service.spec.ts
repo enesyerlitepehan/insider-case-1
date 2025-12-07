@@ -26,16 +26,31 @@ function makeMessages(ids: string[]): Message[] {
 function makeRepo(pending: Message[], shouldTake: Record<string, boolean>) {
   const calls: any[] = [];
   const repo: MessageRepository = {
-    async create(): Promise<void> { calls.push(['create']); },
-    async getById(): Promise<Message | null> { calls.push(['getById']); return null; },
-    async getPending(limit: number): Promise<Message[]> { calls.push(['getPending', limit]); return pending.slice(0, limit); },
-    async getByStatus(): Promise<Message[]> { calls.push(['getByStatus']); return []; },
-    async updateStatus(): Promise<void> { calls.push(['updateStatus']); },
+    async create(): Promise<void> {
+      calls.push(['create']);
+    },
+    async getById(): Promise<Message | null> {
+      calls.push(['getById']);
+      return null;
+    },
+    async getPending(limit: number): Promise<Message[]> {
+      calls.push(['getPending', limit]);
+      return pending.slice(0, limit);
+    },
+    async getByStatus(): Promise<Message[]> {
+      calls.push(['getByStatus']);
+      return [];
+    },
+    async updateStatus(): Promise<void> {
+      calls.push(['updateStatus']);
+    },
     async updateStatusIfCurrent(id, expected, next, extra): Promise<boolean> {
       calls.push(['updateStatusIfCurrent', id, expected, next, extra]);
       return !!shouldTake[id];
     },
-    async incrementRetryCount(): Promise<void> { calls.push(['incrementRetryCount']); },
+    async incrementRetryCount(): Promise<void> {
+      calls.push(['incrementRetryCount']);
+    },
   };
   return { repo, calls };
 }
@@ -43,7 +58,9 @@ function makeRepo(pending: Message[], shouldTake: Record<string, boolean>) {
 function makeSqs() {
   const sent: any[] = [];
   const sqs: SqsClientLike = {
-    async sendMessage(params) { sent.push(params); }
+    async sendMessage(params) {
+      sent.push(params);
+    },
   };
   return { sqs, sent };
 }
@@ -52,15 +69,23 @@ test('dispatchPendingMessages enqueues only items successfully transitioned to I
   const msgs = makeMessages(['a', 'b', 'c']);
   const { repo, calls } = makeRepo(msgs, { a: true, b: false, c: true });
   const { sqs, sent } = makeSqs();
-  const svc = new MessageDispatchService(repo, sqs, 'https://sqs.queue/url', fixedClock('2024-05-05T05:05:05.000Z'));
+  const svc = new MessageDispatchService(
+    repo,
+    sqs,
+    'https://sqs.queue/url',
+    fixedClock('2024-05-05T05:05:05.000Z'),
+  );
   const count = await svc.dispatchPendingMessages(3);
 
   assert.equal(count, 2);
   // getPending called with limit=3
-  assert.deepEqual(calls.find(c => c[0] === 'getPending'), ['getPending', 3]);
+  assert.deepEqual(
+    calls.find((c) => c[0] === 'getPending'),
+    ['getPending', 3],
+  );
 
   // updateStatusIfCurrent called for each id with expected values
-  const upds = calls.filter(c => c[0] === 'updateStatusIfCurrent');
+  const upds = calls.filter((c) => c[0] === 'updateStatusIfCurrent');
   assert.equal(upds.length, 3);
   for (const [_, id, expected, next, extra] of upds) {
     assert.equal(expected, 'PENDING');
@@ -81,6 +106,6 @@ test('dispatchPendingMessages with limit 0 short-circuits without work', async (
   const svc = new MessageDispatchService(repo, sqs, 'q', fixedClock());
   const count = await svc.dispatchPendingMessages(0);
   assert.equal(count, 0);
-  assert.equal(calls.find(c => c[0] === 'getPending') ?? null, null);
+  assert.equal(calls.find((c) => c[0] === 'getPending') ?? null, null);
   assert.equal(sent.length, 0);
 });

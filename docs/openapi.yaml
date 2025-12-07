@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     OpenAPI documentation for the Health and Messages endpoints.
-    
+
     Notes:
     - The Messages endpoints are protected with HTTP Basic authentication enforced in the Lambda middleware.
       Set `AUTH_USER` and `AUTH_PASS` environment variables to enable it. When unset, authentication is disabled.
@@ -155,7 +155,7 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 error: true
-                message: "content must be at most 200 characters"
+                message: 'content must be at most 200 characters'
                 code: VALIDATION_ERROR
         '401':
           description: Unauthorized (Basic auth failed or missing)

@@ -38,7 +38,8 @@ export const basicAuth = (options: BasicAuthOptions = {}) => {
       }
 
       const header =
-        request.event.headers?.authorization || request.event.headers?.Authorization;
+        request.event.headers?.authorization ||
+        request.event.headers?.Authorization;
       if (!header?.startsWith('Basic ')) {
         return unauthorized(options.headers);
       }

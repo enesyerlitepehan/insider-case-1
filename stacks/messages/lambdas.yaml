@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   Dispatcher and Worker lambdas for message sending
@@ -10,7 +10,7 @@ Parameters:
     Type: String
   Suffix:
     Type: String
-    Default: ""
+    Default: ''
   ReleaseVersion:
     Type: String
   EnvTag:
@@ -31,11 +31,11 @@ Parameters:
     Type: String
   AuthUser:
     Type: String
-    Default: "testuser"
+    Default: 'testuser'
     NoEcho: true
   AuthPass:
     Type: String
-    Default: "testpass"
+    Default: 'testpass'
     NoEcho: true
 
 Globals:
@@ -63,8 +63,8 @@ Resources:
   GetMessagesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${EnvName}-${AppName}-get-messages${Suffix}"
-      Description: "Lambda for GET /messages"
+      FunctionName: !Sub '${EnvName}-${AppName}-get-messages${Suffix}'
+      Description: 'Lambda for GET /messages'
       CodeUri: ../../src/functions/messages/get-messages/
       Handler: app.lambdaHandler
       Policies:
@@ -76,7 +76,7 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:Query
-              Resource: !Sub "${MessagesTableArn}/index/*"
+              Resource: !Sub '${MessagesTableArn}/index/*'
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
@@ -99,8 +99,8 @@ Resources:
   PostMessagesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${EnvName}-${AppName}-post-messages${Suffix}"
-      Description: "Lambda for POST /messages"
+      FunctionName: !Sub '${EnvName}-${AppName}-post-messages${Suffix}'
+      Description: 'Lambda for POST /messages'
       CodeUri: ../../src/functions/messages/post-messages/
       Handler: app.lambdaHandler
       Policies:
@@ -132,15 +132,15 @@ Resources:
   MessageDispatcher:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${EnvName}-${AppName}-message-dispatcher${Suffix}"
-      Description: "Periodically scans for pending messages and enqueues jobs (stub)"
+      FunctionName: !Sub '${EnvName}-${AppName}-message-dispatcher${Suffix}'
+      Description: 'Periodically scans for pending messages and enqueues jobs (stub)'
       CodeUri: ../../src/functions/messages/dispatcher/
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - dynamodb:Query
-              Resource: !Sub "${MessagesTableArn}/index/*"
+              Resource: !Sub '${MessagesTableArn}/index/*'
             - Effect: Allow
               Action:
                 - dynamodb:UpdateItem
@@ -152,14 +152,14 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
-          PENDING_LIMIT: "24"
+          PENDING_LIMIT: '24'
           MESSAGE_SEND_QUEUE_URL: !Ref MainQueueUrl
       Events:
         DispatchSchedule:
           Type: Schedule
           Properties:
-            Description: "Run dispatcher periodically"
-            Name: !Sub "${EnvName}-${AppName}-message-dispatcher-schedule${Suffix}"
+            Description: 'Run dispatcher periodically'
+            Name: !Sub '${EnvName}-${AppName}-message-dispatcher-schedule${Suffix}'
             Schedule: rate(1 minute)
 
     Metadata:
@@ -178,8 +178,8 @@ Resources:
   MessageSendWorker:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${EnvName}-${AppName}-message-send-worker${Suffix}"
-      Description: "Consumes SQS messages and logs payloads (stub)"
+      FunctionName: !Sub '${EnvName}-${AppName}-message-send-worker${Suffix}'
+      Description: 'Consumes SQS messages and logs payloads (stub)'
       CodeUri: ../../src/functions/messages/worker/
       Policies:
         - Statement:
@@ -191,8 +191,8 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
-          WEBHOOK_URL: "https://webhook.site/19ca50a1-821e-4b3d-8f50-ed54d5581437"
-          MAX_MESSAGE_LENGTH: "200"
+          WEBHOOK_URL: 'https://webhook.site/19ca50a1-821e-4b3d-8f50-ed54d5581437'
+          MAX_MESSAGE_LENGTH: '200'
       Events:
         SQSTrigger:
           Type: SQS

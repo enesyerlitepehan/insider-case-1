@@ -1,10 +1,6 @@
 // Message domain types for DynamoDB storage
 
-export type MessageStatus =
-  | 'PENDING'
-  | 'IN_PROGRESS'
-  | 'SENT'
-  | 'FAILED';
+export type MessageStatus = 'PENDING' | 'IN_PROGRESS' | 'SENT' | 'FAILED';
 
 // Canonical DynamoDB item shape stored in the Messages table
 export interface Message {
