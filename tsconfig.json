@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "/opt/*": ["src/layers/nodejs/src/*"],
+      "/opt/nodejs/*": ["src/layers/nodejs/src/*"],
       "@/*": ["./*"]
     },
     "lib": ["ES2020"],
