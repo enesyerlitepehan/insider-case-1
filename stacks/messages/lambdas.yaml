@@ -65,7 +65,7 @@ Resources:
     Properties:
       FunctionName: !Sub "${EnvName}-${AppName}-get-messages${Suffix}"
       Description: "Lambda for GET /messages"
-      CodeUri: ../../functions/messages/get-messages/
+      CodeUri: ../../src/functions/messages/get-messages/
       Handler: app.lambdaHandler
       Policies:
         - Statement:
@@ -94,14 +94,14 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - /opt/nodejs/*
+          - /opt/*
 
   PostMessagesFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${EnvName}-${AppName}-post-messages${Suffix}"
       Description: "Lambda for POST /messages"
-      CodeUri: ../../functions/messages/post-messages/
+      CodeUri: ../../src/functions/messages/post-messages/
       Handler: app.lambdaHandler
       Policies:
         - Statement:
@@ -127,14 +127,14 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - /opt/nodejs/*
+          - /opt/*
 
   MessageDispatcher:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${EnvName}-${AppName}-message-dispatcher${Suffix}"
       Description: "Periodically scans for pending messages and enqueues jobs (stub)"
-      CodeUri: ../../functions/messages/dispatcher/
+      CodeUri: ../../src/functions/messages/dispatcher/
       Policies:
         - Statement:
             - Effect: Allow
@@ -173,14 +173,14 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - /opt/nodejs/*
+          - /opt/*
 
   MessageSendWorker:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${EnvName}-${AppName}-message-send-worker${Suffix}"
       Description: "Consumes SQS messages and logs payloads (stub)"
-      CodeUri: ../../functions/messages/worker/
+      CodeUri: ../../src/functions/messages/worker/
       Policies:
         - Statement:
             - Effect: Allow
@@ -212,7 +212,7 @@ Resources:
         Platform: node
         External:
           - aws-sdk
-          - /opt/nodejs/*
+          - /opt/*
 
 Outputs:
   MessageDispatcherArn:

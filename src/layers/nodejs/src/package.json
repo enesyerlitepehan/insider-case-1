@@ -5,8 +5,8 @@
   "description": "Shared Lambda layer for insider-case (logger and utilities)",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc -p .",
-    "prepare": "tsc -p ."
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.946.0",

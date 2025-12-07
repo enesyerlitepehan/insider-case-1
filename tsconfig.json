@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "/opt/nodejs/*": ["layers/nodejs/*"],
+      "/opt/*": ["src/layers/nodejs/src/*"],
       "@/*": ["./*"]
     },
     "lib": ["ES2020"],
@@ -24,7 +24,9 @@
     "resolveJsonModule": true
   },
   "exclude": ["node_modules", "**/__tests__/**/*", "**/*.test.ts", "**/tests/**/*"],
-  "include": ["layers/**/*", "functions/**/*", "stacks/**/*",
-    "layers/nodejs/middlewares/**/*"
+  "include": [
+    "src/layers/**/*",
+    "src/functions/**/*", "stacks/**/*",
+    "src/layers/nodejs/src/middlewares/**/*"
   ]
 }

@@ -6,8 +6,8 @@ on:
     paths:
       - "template.yaml"
       - "stacks/**"
-      - "functions/**"
-      - "layers/**"
+      - "src/functions/**"
+      - "src/layers/**"
       - ".github/workflows/**"
 
 concurrency:
@@ -32,25 +32,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install build tooling (esbuild)
-        run: npm install --prefix functions/healthcheck
+        run: npm install --prefix src/functions/healthcheck
 
       - name: Install get-messages deps
-        run: npm install --prefix functions/messages/get-messages
+        run: npm install --prefix src/functions/messages/get-messages
 
       - name: Install post-messages deps
-        run: npm install --prefix functions/messages/post-messages
+        run: npm install --prefix src/functions/messages/post-messages
 
       - name: Install dispatcher deps
-        run: npm install --prefix functions/messages/dispatcher
+        run: npm install --prefix src/functions/messages/dispatcher
 
       - name: Install worker deps
-        run: npm install --prefix functions/messages/worker
+        run: npm install --prefix src/functions/messages/worker
 
       - name: Install layer dependencies
-        run: npm install --prefix layers/nodejs
+        run: npm install --prefix src/layers/nodejs/src
 
       - name: Build layer TypeScript
-        run: npm run build --prefix layers/nodejs
+        run: npm run build --prefix src/layers/nodejs/src
 
       - name: Debug OIDC payload (safe)
         run: |

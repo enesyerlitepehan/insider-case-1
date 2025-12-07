@@ -1,5 +1,5 @@
-import { messageDispatchService } from '/opt/nodejs/utils/container';
-import { logger } from '/opt/nodejs/utils/logger';
+import { messageDispatchService } from '/opt/utils/container';
+import { logger } from '/opt/utils/logger';
 
 export const schedulerHandler = async () => {
   const startedAt = new Date().toISOString();

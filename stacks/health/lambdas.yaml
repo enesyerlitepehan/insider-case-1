@@ -41,7 +41,7 @@ Resources:
     Properties:
       LayerName: !Sub "${EnvName}-${AppName}-shared${Suffix}"
       Description: "Shared utilities (logger, helpers)"
-      ContentUri: ../../layers/nodejs
+      ContentUri: ../../src/layers/nodejs/src
       CompatibleRuntimes:
         - nodejs22.x
       RetentionPolicy: Retain
@@ -53,7 +53,7 @@ Resources:
     Properties:
       FunctionName: !Sub "${EnvName}-${AppName}-healthcheck${Suffix}"
       Description: "Returns a 200 OK for load balancers or uptime checks"
-      CodeUri: ../../functions/healthcheck/
+      CodeUri: ../../src/functions/healthcheck/
       Layers:
         - !Ref SharedLayer
     Metadata:

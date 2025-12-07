@@ -1,6 +1,6 @@
 import middy from '@middy/core';
-import { basicAuth } from '/opt/nodejs/middlewares/basic-auth';
-import { messageService } from '/opt/nodejs/utils/container';
+import { basicAuth } from '/opt/middlewares/basic-auth';
+import { messageService } from '/opt/utils/container';
 
 type APIGatewayProxyEvent = {
   body: string | null;

@@ -10,6 +10,10 @@
     "sourceMap": false
   },
   "include": [
-    "utils/**/*.ts"
+    "utils/**/*.ts",
+    "middlewares/**/*.ts",
+    "services/**/*.ts",
+    "interfaces/**/*.ts",
+    "enums/**/*.ts"
   ]
 }
