@@ -19,12 +19,12 @@ This document covers setup, env vars, flow, and where to find the API spec. A li
 - API auth: `AUTH_USER`, `AUTH_PASS` (leave empty to disable basic auth)
 - Dispatcher:
   - `MESSAGES_TABLE` (DynamoDB table name)
-  - `PENDING_LIMIT` (max items enqueued per run; currently 24)
+  - `PENDING_LIMIT` (max items enqueued per run; default 24 in stacks/messages/lambdas.yaml)
   - `MESSAGE_SEND_QUEUE_URL` (SQS URL)
 - Worker:
   - `MESSAGES_TABLE`
-  - `WEBHOOK_URL` (target webhook)
-  - `MAX_MESSAGE_LENGTH` (content length limit; enforced on create and send)
+  - `WEBHOOK_URL` (target webhook; default sample in stacks/messages/lambdas.yaml → `https://webhook.site/19ca50a1-821e-4b3d-8f50-ed54d5581437`)
+  - `MAX_MESSAGE_LENGTH` (content length limit; default "200" in stacks/messages/lambdas.yaml; enforced on create and send)
 - Layer/services also accept `WEBHOOK_AUTH_KEY`, but it is not used currently.
 
 ## Flow
@@ -46,3 +46,5 @@ This document covers setup, env vars, flow, and where to find the API spec. A li
   - Health: `https://mg3gv5c2rb.execute-api.us-west-2.amazonaws.com/dev/health`
   - Messages: `https://82jfwu9id7.execute-api.us-west-2.amazonaws.com/dev/messages`
   - Basic Auth: `testuser` / `testpass`
+- Redis caching (bonus requirement) is not enabled; no Redis client/env is configured in the container.
+- Rate pacing: dispatcher runs every minute and enqueues up to 24 messages; worker consumes SQS in batches of 2 with ~2.5s delay between sends, keeping the “~2 messages per ~5 seconds” rule while still moving ~24 messages per minute.
