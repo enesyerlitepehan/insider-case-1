@@ -37,6 +37,14 @@ Parameters:
     Default: "testpass"
     NoEcho: true
     Description: "Basic auth password for API lambdas (leave blank to disable)"
+  RedisUrl:
+    Type: String
+    Default: ""
+    Description: "Redis connection URL (optional)"
+  RedisTtlSeconds:
+    Type: String
+    Default: "0"
+    Description: "Default TTL for cached entries (seconds, optional)"
 
 Resources:
   MessagesDynamoDb:
@@ -78,6 +86,8 @@ Resources:
         SharedLayerArn: !Ref SharedLayerArn
         AuthUser: !Ref AuthUser
         AuthPass: !Ref AuthPass
+        RedisUrl: !Ref RedisUrl
+        RedisTtlSeconds: !Ref RedisTtlSeconds
         # From DynamoDB nested stack
         MessagesTableName: !GetAtt MessagesDynamoDb.Outputs.MessagesTableName
         MessagesTableArn: !GetAtt MessagesDynamoDb.Outputs.MessagesTableArn

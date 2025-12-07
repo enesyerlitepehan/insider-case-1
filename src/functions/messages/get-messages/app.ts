@@ -4,6 +4,7 @@ import { messageService } from '/opt/nodejs/utils/container';
 import { ApiResponse } from '/opt/nodejs/utils/api-response';
 import { ApiError } from '/opt/nodejs/enums/api.enum';
 import type { HTTPResponse } from '/opt/nodejs/utils/common';
+import { logger } from '/opt/nodejs/utils/logger';
 
 type APIGatewayProxyEvent = {
   body: string | null;
@@ -20,7 +21,7 @@ const baseHandler = async (
       data: messages,
     });
   } catch (error) {
-    console.error('Error in GET /messages', error);
+    logger.error('GET /messages failed', { error: (error as Error)?.message });
     return apiResponse.createErrorResponse(
       500,
       'Internal server error',

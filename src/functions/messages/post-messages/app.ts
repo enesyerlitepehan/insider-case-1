@@ -8,6 +8,7 @@ import { ApiError } from '/opt/nodejs/enums/api.enum';
 import type { HTTPResponse } from '/opt/nodejs/utils/common';
 import { validator } from '/opt/nodejs/middlewares/validator';
 import { postMessageSchema } from '/opt/nodejs/middlewares/schemas/messages/post-message-schema';
+import { logger } from '/opt/nodejs/utils/logger';
 
 type APIGatewayProxyEvent = {
   body: any;
@@ -34,7 +35,7 @@ const baseHandler = async (
       data: { count: created.length, messages: created },
     });
   } catch (error) {
-    console.error('Error in POST /messages', error);
+    logger.error('POST /messages failed', { error: (error as Error)?.message });
     return apiResponse.createErrorResponse(
       500,
       'Internal server error',

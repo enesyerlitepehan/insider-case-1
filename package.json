@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "cd src/layers/nodejs/src && npm run build && node --test services/__tests__/*.spec.js"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",

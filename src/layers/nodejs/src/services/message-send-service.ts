@@ -30,7 +30,7 @@ export class MessageSendService {
     const { id } = job;
     const msg = await this.repo.getById(id);
     if (!msg) {
-      logger.info('SendJob: message not found, acking', { id });
+      logger.info('SendJob: message not found; skipping', { id });
       return;
     }
 
@@ -40,7 +40,7 @@ export class MessageSendService {
       return;
     }
     if (msg.status === 'FAILED') {
-      logger.info('SendJob: already failed terminally, skipping', { id });
+      logger.info('SendJob: already marked FAILED; skipping', { id });
       return;
     }
 
@@ -114,7 +114,7 @@ export class MessageSendService {
       if ((e as any)?.status === undefined) {
         try { await this.repo.incrementRetryCount(id); } catch {}
       }
-      logger.error('SendJob: error sending webhook', { id, error: (e as Error).message });
+      logger.error('SendJob: webhook send failed', { id, status: (e as any)?.status, error: (e as Error).message });
       throw e;
     }
   }

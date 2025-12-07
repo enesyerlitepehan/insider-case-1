@@ -36,6 +36,14 @@ Parameters:
     Default: "testpass"
     NoEcho: true
     Description: "Basic auth password for messages API (blank disables auth)"
+  RedisUrl:
+    Type: String
+    Default: ""
+    Description: "Redis connection URL for worker cache (optional)"
+  RedisTtlSeconds:
+    Type: String
+    Default: "0"
+    Description: "Default Redis TTL for cached entries (seconds, optional)"
 
 Resources:
   HealthStack:
@@ -65,6 +73,8 @@ Resources:
         SharedLayerArn: !GetAtt HealthStack.Outputs.SharedLayerArn
         AuthUser: !Ref AuthUser
         AuthPass: !Ref AuthPass
+        RedisUrl: !Ref RedisUrl
+        RedisTtlSeconds: !Ref RedisTtlSeconds
 
 Outputs:
   HealthApiUrl:

@@ -1,5 +1,6 @@
 import { ApiResponse } from '/opt/nodejs/utils/api-response';
 import { ApiError } from '/opt/nodejs/enums/api.enum';
+import { logger } from '/opt/nodejs/utils/logger';
 
 type ApiGatewayEvent = {
   requestContext?: {
@@ -20,6 +21,7 @@ const baseHandler = async (event: ApiGatewayEvent) => {
       },
     });
   } catch (e) {
+    logger.error('Healthcheck failed', { error: (e as Error)?.message });
     return apiResponse.createErrorResponse(
       500,
       'Healthcheck failed',
