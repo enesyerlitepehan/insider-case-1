@@ -12,11 +12,10 @@
     "@aws-sdk/client-dynamodb": "^3.946.0",
     "@aws-sdk/client-sqs": "^3.946.0",
     "@aws-sdk/lib-dynamodb": "^3.946.0",
+    "@types/aws-lambda": "^8.10.138",
+    "@types/node": "^22.7.4",
     "typescript": "^5.6.3",
     "winston": "^3.17.0"
   },
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.138",
-    "@types/node": "^22.7.4"
-  }
+  "devDependencies": {}
 }
