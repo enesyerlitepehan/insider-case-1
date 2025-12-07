@@ -87,9 +87,13 @@ export class MessageSendService {
         throw new Error('Webhook response missing messageId');
       }
 
+      // Append a random suffix to ensure uniqueness for messageId
+      const randomUid = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+      const messageId = `${externalId}-${randomUid}`;
+
       const nowIso = this.clock.now().toISOString();
       await this.repo.updateStatus(id, 'SENT', {
-        messageId: externalId,
+        messageId,
         sentAt: nowIso,
         updatedAt: nowIso,
       } as Partial<Message>);
@@ -97,7 +101,7 @@ export class MessageSendService {
       if (this.redis) {
         try {
           const key = `message:${id}`;
-          const value = JSON.stringify({ messageId: externalId, sentAt: nowIso });
+          const value = JSON.stringify({ messageId, sentAt: nowIso });
           await this.redis.set(key, value, this.config.cacheTtlSeconds);
         } catch (e) {
           // Cache failures should not break main flow
