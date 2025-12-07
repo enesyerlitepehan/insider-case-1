@@ -1,3 +1,5 @@
+import middy from '@middy/core';
+import { basicAuth } from '@/middlewares/basic-auth';
 import { messageService } from '/opt/nodejs/utils/container';
 
 type APIGatewayProxyEvent = {
@@ -17,7 +19,9 @@ const baseHeaders = {
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
 };
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+const baseHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
   try {
     if (!event.body) {
       return {
@@ -69,5 +73,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 };
 
-// Keep default export name expected by SAM Globals.Handler
-export const lambdaHandler = handler;
+export const lambdaHandler = middy(baseHandler).use(
+  basicAuth({ headers: baseHeaders }),
+);

@@ -27,6 +27,16 @@ Parameters:
   SharedLayerArn:
     Type: String
     Description: "Layer ARN providing shared utilities for lambdas"
+  AuthUser:
+    Type: String
+    Default: "testuser"
+    NoEcho: true
+    Description: "Basic auth username for API lambdas (leave blank to disable)"
+  AuthPass:
+    Type: String
+    Default: "testpass"
+    NoEcho: true
+    Description: "Basic auth password for API lambdas (leave blank to disable)"
 
 Resources:
   MessagesDynamoDb:
@@ -66,6 +76,8 @@ Resources:
         EnvTag: !Ref EnvTag
         ServiceTag: !Ref ServiceTag
         SharedLayerArn: !Ref SharedLayerArn
+        AuthUser: !Ref AuthUser
+        AuthPass: !Ref AuthPass
         # From DynamoDB nested stack
         MessagesTableName: !GetAtt MessagesDynamoDb.Outputs.MessagesTableName
         MessagesTableArn: !GetAtt MessagesDynamoDb.Outputs.MessagesTableArn

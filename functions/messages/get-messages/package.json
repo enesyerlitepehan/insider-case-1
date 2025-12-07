@@ -4,6 +4,7 @@
   "description": "GET /messages lambda",
   "license": "MIT",
   "dependencies": {
+    "@middy/core": "^6.4.5",
     "esbuild": "^0.21.5"
   }
 }

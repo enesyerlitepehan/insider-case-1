@@ -1,10 +1,12 @@
+import middy from '@middy/core';
+
 type ApiGatewayEvent = {
   requestContext?: {
     requestId?: string;
   };
 };
 
-export const lambdaHandler = async (event: ApiGatewayEvent) => {
+const baseHandler = async (event: ApiGatewayEvent) => {
   const requestId = event?.requestContext?.requestId ?? "unknown";
 
   return {
@@ -19,3 +21,5 @@ export const lambdaHandler = async (event: ApiGatewayEvent) => {
     }),
   };
 };
+
+export const lambdaHandler = middy(baseHandler)

@@ -29,6 +29,14 @@ Parameters:
     Type: String
   SharedLayerArn:
     Type: String
+  AuthUser:
+    Type: String
+    Default: "testuser"
+    NoEcho: true
+  AuthPass:
+    Type: String
+    Default: "testpass"
+    NoEcho: true
 
 Globals:
   Function:
@@ -72,6 +80,8 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
+          AUTH_USER: !Ref AuthUser
+          AUTH_PASS: !Ref AuthPass
 
     Metadata:
       BuildMethod: esbuild
@@ -103,6 +113,8 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
+          AUTH_USER: !Ref AuthUser
+          AUTH_PASS: !Ref AuthPass
 
     Metadata:
       BuildMethod: esbuild

@@ -26,6 +26,16 @@ Parameters:
   ServiceTag:
     Type: String
     Default: insider-case
+  AuthUser:
+    Type: String
+    Default: "testuser"
+    NoEcho: true
+    Description: "Basic auth username for messages API (blank disables auth)"
+  AuthPass:
+    Type: String
+    Default: "testpass"
+    NoEcho: true
+    Description: "Basic auth password for messages API (blank disables auth)"
 
 Resources:
   HealthStack:
@@ -53,6 +63,8 @@ Resources:
         ServiceTag: !Ref ServiceTag
         EnableTTL: "false"
         SharedLayerArn: !GetAtt HealthStack.Outputs.SharedLayerArn
+        AuthUser: !Ref AuthUser
+        AuthPass: !Ref AuthPass
 
 Outputs:
   HealthApiUrl:
