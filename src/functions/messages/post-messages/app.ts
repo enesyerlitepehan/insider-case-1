@@ -1,4 +1,6 @@
 import middy from '@middy/core';
+import { customCors } from '/opt/nodejs/middlewares/custom-cors';
+import { bodyChecker } from '/opt/nodejs/middlewares/body-checker';
 import { basicAuth } from '/opt/nodejs/middlewares/basic-auth';
 import { messageService } from '/opt/nodejs/utils/container';
 
@@ -14,9 +16,6 @@ type APIGatewayProxyResult = {
 
 const baseHeaders = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
 };
 
 const baseHandler = async (
@@ -74,5 +73,10 @@ const baseHandler = async (
 };
 
 export const lambdaHandler = middy(baseHandler).use(
-  basicAuth({ headers: baseHeaders }),
-);
+  // Ensure CORS headers are applied for all responses
+  customCors(),
+)
+  // Validate that body exists and is JSON
+  .use(bodyChecker())
+  // Do auth after body check so we still attach CORS for 401 responses via customCors
+  .use(basicAuth());

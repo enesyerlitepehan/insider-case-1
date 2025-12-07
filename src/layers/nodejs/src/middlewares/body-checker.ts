@@ -1,16 +1,23 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
+type MiddyRequest = { event: APIGatewayProxyEvent } & {
+  response?: { statusCode: number; headers?: Record<string, string>; body?: string };
+};
+
 export const bodyChecker = () => {
   return {
-    before: async (request: { event: APIGatewayProxyEvent }) => {
-      if (
-        !request.event.body ||
-        (!request.event.headers['Content-Type']?.includes('application/json') &&
-          !request.event.headers['content-type']?.includes('application/json'))
-      ) {
-        //return apiResponse.createErrorResponse(400, "Request body is required and must be JSON", ApiError.VALIDATION_ERROR);
+    before: async (request: MiddyRequest) => {
+      const contentType =
+        request.event.headers?.['Content-Type'] ||
+        request.event.headers?.['content-type'] ||
+        '';
+
+      const isJson = typeof contentType === 'string' && contentType.includes('application/json');
+
+      if (!request.event.body || !isJson) {
         return {
           statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             error: true,
             message: 'Request body is required and must be JSON',

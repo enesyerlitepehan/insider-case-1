@@ -1,4 +1,5 @@
 import middy from '@middy/core';
+import { customCors } from '/opt/nodejs/middlewares/custom-cors';
 import { basicAuth } from '/opt/nodejs/middlewares/basic-auth';
 import { messageService } from '/opt/nodejs/utils/container';
 
@@ -14,9 +15,6 @@ type APIGatewayProxyResult = {
 
 const baseHeaders = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
 };
 
 const baseHandler = async (
@@ -39,6 +37,9 @@ const baseHandler = async (
   }
 };
 
-export const lambdaHandler = middy(baseHandler).use(
-  basicAuth({ headers: baseHeaders }),
-);
+export const lambdaHandler = middy(baseHandler)
+  .use(
+    // Ensure CORS headers are applied for all responses (including early exits)
+    customCors(),
+  )
+  .use(basicAuth({ headers: baseHeaders }));
