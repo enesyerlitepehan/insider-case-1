@@ -1,7 +1,7 @@
 import middy from '@middy/core';
-import { customCors } from '/opt/nodejs/middlewares/custom-cors';
 import { bodyChecker } from '/opt/nodejs/middlewares/body-checker';
 import { basicAuth } from '/opt/nodejs/middlewares/basic-auth';
+import { corsPolicies } from '/opt/nodejs/middlewares/cors-policies';
 import { messageService } from '/opt/nodejs/utils/container';
 
 type APIGatewayProxyEvent = {
@@ -14,8 +14,19 @@ type APIGatewayProxyResult = {
   body: string;
 };
 
+const corsConfig = corsPolicies['/messages'] ?? {
+  origin: '*',
+  credentials: false,
+  headers: 'Content-Type,Authorization',
+  methods: 'GET,POST,OPTIONS',
+};
+
 const baseHeaders = {
   'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': corsConfig.origin,
+  ...(corsConfig.credentials ? { 'Access-Control-Allow-Credentials': 'true' } : {}),
+  ...(corsConfig.headers ? { 'Access-Control-Allow-Headers': corsConfig.headers } : {}),
+  ...(corsConfig.methods ? { 'Access-Control-Allow-Methods': corsConfig.methods } : {}),
 };
 
 const baseHandler = async (
@@ -72,7 +83,4 @@ const baseHandler = async (
   }
 };
 
-export const lambdaHandler = middy(baseHandler)
-  .use(customCors())
-  .use(bodyChecker())
-  .use(basicAuth());
+export const lambdaHandler = middy(baseHandler).use(bodyChecker()).use(basicAuth());
