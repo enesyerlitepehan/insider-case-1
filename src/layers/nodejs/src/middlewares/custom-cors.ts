@@ -2,6 +2,15 @@ import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { corsPolicies } from './cors-policies';
 import { logger } from '../utils/logger';
 
+// Middy http-cors is ESM-only; load lazily via dynamic import to avoid require() issues in CJS build output
+let httpCorsFactory: any | null = null;
+const getHttpCors = async () => {
+  if (httpCorsFactory) return httpCorsFactory;
+  const mod = await import('@middy/http-cors');
+  httpCorsFactory = mod.default ?? mod;
+  return httpCorsFactory;
+};
+
 type MiddlewareRequest = {
   event: APIGatewayProxyEvent;
   context: Context;
@@ -13,28 +22,9 @@ type MiddlewareRequest = {
   internal: Record<string, any>;
 };
 
-// Middy v6 packages are ESM-only. Since this layer compiles to CommonJS,
-// we must load @middy/http-cors via dynamic import at runtime.
-type HttpCorsFactory = (
-  opts: {
-    origin?: string | boolean;
-    credentials?: boolean;
-    headers?: string;
-    methods?: string;
-  },
-) => { after?: (req: any) => any; onError?: (req: any) => any };
-
-let httpCorsFactory: HttpCorsFactory | null = null;
-const getHttpCors = async (): Promise<HttpCorsFactory> => {
-  if (!httpCorsFactory) {
-    const mod: any = await import('@middy/http-cors');
-    httpCorsFactory = mod.default ?? mod;
-  }
-  return httpCorsFactory!;
-};
-
 export const customCors = () => ({
   before: async (request: MiddlewareRequest) => {
+    const httpCors = await getHttpCors();
     const resource = (request.event as any).resource as string | undefined;
     const path = (request.event.path || '') as string;
 
@@ -53,7 +43,6 @@ export const customCors = () => ({
     const config = matched?.[1] ?? { origin: '*' };
 
     // store httpCors middleware to run after/onError
-    const httpCors = await getHttpCors();
     request.internal._cors = httpCors({
       origin: config.origin,
       credentials: config.credentials,
@@ -62,9 +51,11 @@ export const customCors = () => ({
     });
   },
   after: async (request: MiddlewareRequest) => {
+    const httpCors = await getHttpCors();
     await request.internal._cors?.after?.(request);
   },
   onError: async (request: MiddlewareRequest) => {
+    const httpCors = await getHttpCors();
     await request.internal._cors?.onError?.(request);
   },
 });
