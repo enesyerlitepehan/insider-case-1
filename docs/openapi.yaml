@@ -1,0 +1,337 @@
+openapi: 3.0.3
+info:
+  title: Insider Case API
+  version: 1.0.0
+  description: |
+    OpenAPI documentation for the Health and Messages endpoints.
+    
+    Notes:
+    - The Messages endpoints are protected with HTTP Basic authentication enforced in the Lambda middleware.
+      Set `AUTH_USER` and `AUTH_PASS` environment variables to enable it. When unset, authentication is disabled.
+    - All successful responses use a common envelope: `{ "message": string, "data": any }`.
+    - Error responses may come from middleware (validation/auth) or from the handler. See schemas below.
+
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com/{stage}
+    description: Generic API Gateway invoke URL
+    variables:
+      apiId:
+        default: your-api-id
+        description: API Gateway identifier (different for Health and Messages APIs)
+      region:
+        default: us-east-1
+      stage:
+        default: dev
+
+tags:
+  - name: Health
+    description: Service healthcheck
+  - name: Messages
+    description: Create and list messages
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Healthcheck
+      description: Returns service status and metadata.
+      responses:
+        '200':
+          description: Health OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessHealthResponse'
+              example:
+                message: Healthcheck OK
+                data:
+                  status: ok
+                  requestId: 1234abcd-ef56-7890
+                  timestamp: 2025-12-07T19:01:00.000Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                message: Healthcheck failed
+                error: INTERNAL_SERVER_ERROR
+
+  /messages:
+    get:
+      tags: [Messages]
+      summary: List sent messages
+      description: Returns messages with status `SENT`.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Messages fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessagesListResponse'
+              example:
+                message: Messages fetched successfully
+                data:
+                  - id: 8c0e3e1d-8b4c-4b24-9a43-6b4b40a8c0d1
+                    to: '+15550001111'
+                    content: 'Hello'
+                    status: SENT
+                    messageId: 'provider-123'
+                    createdAt: '2025-12-07T19:01:00.000Z'
+                    updatedAt: '2025-12-07T19:02:00.000Z'
+                    sentAt: '2025-12-07T19:02:00.000Z'
+                    retryCount: 0
+        '401':
+          description: Unauthorized (Basic auth failed or missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              example:
+                error: true
+                message: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                message: Internal server error
+                error: INTERNAL_SERVER_ERROR
+
+    post:
+      tags: [Messages]
+      summary: Create messages
+      description: Creates one or more messages with initial status `PENDING`.
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostMessagesRequest'
+            example:
+              messages:
+                - to: '+15550001111'
+                  content: 'Hello world'
+                - to: '+15550002222'
+                  content: 'Another message'
+      responses:
+        '201':
+          description: Messages created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessagesCreateResponse'
+              example:
+                message: Messages created
+                data:
+                  count: 2
+                  messages:
+                    - id: 2f8e7f2d-1c23-4f67-9a89-0123456789ab
+                      to: '+15550001111'
+                      content: 'Hello world'
+                      status: PENDING
+                      retryCount: 0
+                      createdAt: '2025-12-07T19:01:00.000Z'
+                      updatedAt: '2025-12-07T19:01:00.000Z'
+                    - id: 3a9b8c7d-4e5f-6789-0123-abcdefabcdef
+                      to: '+15550002222'
+                      content: 'Another message'
+                      status: PENDING
+                      retryCount: 0
+                      createdAt: '2025-12-07T19:01:00.000Z'
+                      updatedAt: '2025-12-07T19:01:00.000Z'
+        '400':
+          description: Validation error (from validator middleware)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                error: true
+                message: "content must be at most 200 characters"
+                code: VALIDATION_ERROR
+        '401':
+          description: Unauthorized (Basic auth failed or missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+              example:
+                error: true
+                message: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                message: Internal server error
+                error: INTERNAL_SERVER_ERROR
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    # Common envelopes
+    SuccessEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          description: Payload specific to the endpoint
+      required: [message]
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          $ref: '#/components/schemas/ApiError'
+      required: [message, error]
+
+    UnauthorizedResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Unauthorized
+      required: [error, message]
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: true
+        message:
+          type: string
+        code:
+          type: string
+          enum: [VALIDATION_ERROR]
+      required: [error, message, code]
+
+    SuccessHealthResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/HealthData'
+
+    SuccessMessagesListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+
+    SuccessMessagesCreateResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  format: int32
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Message'
+              required: [count, messages]
+
+    HealthData:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required: [status, requestId, timestamp]
+
+    Message:
+      type: object
+      description: Canonical message entity stored in DynamoDB
+      properties:
+        id:
+          type: string
+          description: UUID v4
+        to:
+          type: string
+          description: Recipient phone number (E.164 or local as provided)
+        content:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, SENT, FAILED]
+        messageId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        retryCount:
+          type: integer
+          format: int32
+        expiresAt:
+          type: integer
+          format: int64
+          description: TTL epoch seconds if enabled
+          nullable: true
+      required: [id, to, content, status, createdAt, updatedAt, retryCount]
+
+    PostMessagesRequest:
+      type: object
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            properties:
+              to:
+                type: string
+              content:
+                type: string
+                maxLength: 200
+            required: [to, content]
+      required: [messages]
+
+    ApiError:
+      type: string
+      enum:
+        - NO_AUTHORIZATION_TOKEN
+        - AUTHENTICATION_ERROR
+        - INTERNAL_SERVER_ERROR
