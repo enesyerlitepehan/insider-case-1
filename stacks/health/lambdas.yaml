@@ -67,6 +67,7 @@ Resources:
         Platform: node
         External:
           - aws-sdk
+          - /opt/nodejs/*
 
 Outputs:
   HealthCheckArn:
