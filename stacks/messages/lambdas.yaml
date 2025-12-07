@@ -181,6 +181,7 @@ Resources:
       FunctionName: !Sub "${EnvName}-${AppName}-message-send-worker${Suffix}"
       Description: "Consumes SQS messages and logs payloads (stub)"
       CodeUri: ../../src/functions/messages/worker/
+      ReservedConcurrentExecutions: 1
       Policies:
         - Statement:
             - Effect: Allow
@@ -200,8 +201,6 @@ Resources:
             Queue: !Ref MainQueueArn
             BatchSize: 2
             MaximumBatchingWindowInSeconds: 1
-            ScalingConfig:
-              MaximumConcurrency: 1
             Enabled: true
 
     Metadata:
