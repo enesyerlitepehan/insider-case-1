@@ -6,11 +6,18 @@ const maxMessageLength = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : 
 export const postMessageSchema = yup.object({
   body: yup
     .object({
-      to: yup.string().required('to is required'),
-      content: yup
-        .string()
-        .required('content is required')
-        .max(maxMessageLength, `content must be at most ${maxMessageLength} characters`),
+      messages: yup
+        .array(
+          yup.object({
+            to: yup.string().required('to is required'),
+            content: yup
+              .string()
+              .required('content is required')
+              .max(maxMessageLength, `content must be at most ${maxMessageLength} characters`),
+          }),
+        )
+        .required('messages is required')
+        .min(1, 'messages must have at least 1 item'),
     })
-    .required(),
+    .required('body is required'),
 });

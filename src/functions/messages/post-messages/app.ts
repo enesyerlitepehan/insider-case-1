@@ -18,16 +18,20 @@ const baseHandler = async (
 ): Promise<HTTPResponse> => {
   const apiResponse = new ApiResponse();
   try {
-    const payload = event.body as { to: string; content: string };
+    const payload = event.body as { messages: { to: string; content: string }[] };
 
-    const created = await messageService.createMessage({
-      to: payload.to,
-      content: payload.content,
-    });
+    const created = await Promise.all(
+      (payload.messages ?? []).map(msg =>
+        messageService.createMessage({
+          to: msg.to,
+          content: msg.content,
+        }),
+      ),
+    );
 
     return apiResponse.createSuccessResponse(201, {
-      message: 'Message created',
-      data: created,
+      message: 'Messages created',
+      data: { count: created.length, messages: created },
     });
   } catch (error) {
     console.error('Error in POST /messages', error);

@@ -152,7 +152,7 @@ Resources:
       Environment:
         Variables:
           MESSAGES_TABLE: !Ref MessagesTableName
-          PENDING_LIMIT: "2"
+          PENDING_LIMIT: "24"
           MESSAGE_SEND_QUEUE_URL: !Ref MainQueueUrl
       Events:
         DispatchSchedule:
@@ -198,7 +198,10 @@ Resources:
           Type: SQS
           Properties:
             Queue: !Ref MainQueueArn
-            BatchSize: 1
+            BatchSize: 2
+            MaximumBatchingWindowInSeconds: 1
+            ScalingConfig:
+              MaximumConcurrency: 1
             Enabled: true
 
     Metadata:

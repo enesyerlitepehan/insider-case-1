@@ -13,15 +13,25 @@ type SQSEvent = {
   Records: SQSEventRecord[];
 };
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const PACE_MS = 2500; // ~2.5s between sends to achieve ~2 msgs per 5s
+
 export const baseHandler = async (event: SQSEvent) => {
   logger.info('message-send-worker invoked', { count: event?.Records?.length ?? 0 });
 
-  for (const rec of event.Records ?? []) {
+  const records = event.Records ?? [];
+  for (let i = 0; i < records.length; i++) {
+    const rec = records[i];
     try {
       const payload: SendMessageJobPayload = JSON.parse(rec.body);
       logger.info('worker processing', { messageId: rec.messageId, payloadId: payload?.id });
       await messageSendService.processSendJob(payload);
       logger.info('worker processed', { payloadId: payload?.id });
+      // Pace the throughput: ~2 messages every ~5s
+      const isLast = i === records.length - 1;
+      if (!isLast) {
+        await sleep(PACE_MS);
+      }
     } catch (e) {
       logger.error('worker error', {
         sqsMessageId: rec.messageId,
