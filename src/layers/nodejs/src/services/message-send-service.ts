@@ -68,7 +68,7 @@ export class MessageSendService {
       headers['x-ins-auth-key'] = this.config.authKey;
     }
     const body = {
-      message: msg.content,
+      content: msg.content,
       to: msg.to,
     };
 

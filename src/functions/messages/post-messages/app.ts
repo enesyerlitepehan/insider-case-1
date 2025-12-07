@@ -6,9 +6,10 @@ import { messageService } from '/opt/nodejs/utils/container';
 import { ApiResponse } from '/opt/nodejs/utils/api-response';
 import { ApiError } from '/opt/nodejs/enums/api.enum';
 import type { HTTPResponse } from '/opt/nodejs/utils/common';
+import { validator } from '/opt/nodejs/middlewares/validator';
+import { postMessageSchema } from '/opt/nodejs/middlewares/schemas/messages/post-message-schema';
 
 type APIGatewayProxyEvent = {
-  // After jsonBodyParser, body will be an object; otherwise could be string/null
   body: any;
 };
 
@@ -17,17 +18,7 @@ const baseHandler = async (
 ): Promise<HTTPResponse> => {
   const apiResponse = new ApiResponse();
   try {
-    const payload: { to?: string; content?: string } =
-      typeof event.body === 'object' && event.body !== null
-        ? (event.body as any)
-        : {};
-
-    if (!payload.to || !payload.content) {
-      return apiResponse.createErrorResponse(
-        400,
-        'Validation error: both "to" and "content" are required',
-      );
-    }
+    const payload = event.body as { to: string; content: string };
 
     const created = await messageService.createMessage({
       to: payload.to,
@@ -51,4 +42,5 @@ const baseHandler = async (
 export const lambdaHandler = middy(baseHandler)
   .use(bodyChecker())
   .use(httpJsonBodyParser())
+  .use(validator(postMessageSchema))
   .use(basicAuth());

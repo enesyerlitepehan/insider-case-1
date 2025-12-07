@@ -2,7 +2,7 @@ import { MessageDynamoDbService, MessageRepository } from '../services/dynamodb-
 import { MessageService } from '../services/message-service';
 import { MessageDispatchService } from '../services/message-dispatch-service';
 import { MessageSendService, MessageSendServiceConfig } from '../services/message-send-service';
-import { HttpClientLike, SqsClientLike } from '../services/types';
+import { HttpClientLike, RedisClientLike, SqsClientLike } from '../services/types';
 import { logger } from './logger';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import axios from 'axios';
@@ -73,18 +73,46 @@ const httpClient: HttpClientLike = {
 
 // No direct AWS SDK v2 DocumentClient usage for repository; we use AWS SDK v3 in the DynamoDB service
 
+class RedisClient implements RedisClientLike {
+  constructor(private readonly client: any, private readonly defaultTtlSeconds?: number) {}
+  async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+    const ttl = ttlSeconds ?? this.defaultTtlSeconds;
+    if (ttl && ttl > 0) {
+      await this.client.set(key, value, 'EX', ttl);
+    } else {
+      await this.client.set(key, value);
+    }
+  }
+}
+
+function buildRedisClient(redisUrl?: string, defaultTtlSeconds?: number): RedisClientLike | null {
+  if (!redisUrl) return null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Redis = require('ioredis');
+    const client = new Redis(redisUrl);
+    return new RedisClient(client, defaultTtlSeconds);
+  } catch (e) {
+    logger.error('Redis client init failed', { error: (e as Error).message });
+    return null;
+  }
+}
+
 // Environment accessors
 const env = {
   messagesTable: process.env.MESSAGES_TABLE || process.env.MESSAGES_TABLE_NAME || '',
   queueUrl: process.env.MESSAGE_SEND_QUEUE_URL || process.env.MainQueueUrl || '',
   webhookUrl: process.env.WEBHOOK_URL || '',
-  webhookAuthKey: process.env.WEBHOOK_AUTH_KEY,
+  webhookAuthKey: process.env.WEBHOOK_AUTH_KEY || '',
   maxMessageLength: Number(process.env.MAX_MESSAGE_LENGTH || 200),
+  redisUrl: process.env.REDIS_URL,
+  redisTtlSeconds: Number(process.env.REDIS_TTL_SECONDS || 0),
 };
 
 // Shared instances
 const repository: MessageRepository = new MessageDynamoDbService(env.messagesTable);
 const sqsClient: SqsClientLike = new AwsSqsClient();
+const redisClient: RedisClientLike | null = buildRedisClient(env.redisUrl, env.redisTtlSeconds);
 
 const messageServiceInstance = new MessageService(repository);
 const messageDispatchServiceInstance = new MessageDispatchService(
@@ -98,8 +126,9 @@ const sendConfig: MessageSendServiceConfig = {
   webhookUrl: env.webhookUrl,
   authKey: env.webhookAuthKey,
   maxMessageLength: env.maxMessageLength,
+  cacheTtlSeconds: env.redisTtlSeconds > 0 ? env.redisTtlSeconds : undefined,
 };
-const messageSendServiceInstance = new MessageSendService(repository, httpClient, sendConfig);
+const messageSendServiceInstance = new MessageSendService(repository, httpClient, sendConfig, undefined, redisClient || undefined);
 
 export const container = {
   repository,
