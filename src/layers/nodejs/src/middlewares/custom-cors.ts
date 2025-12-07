@@ -1,7 +1,7 @@
 import httpCors from '@middy/http-cors';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { corsPolicies } from './cors-policies';
-import { logger } from '/opt/nodejs/utils/logger';
+import { logger } from '../utils/logger';
 
 type MiddlewareRequest = {
   event: APIGatewayProxyEvent;
